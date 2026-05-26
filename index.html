@@ -4,231 +4,406 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Graph Algorithms - Complete Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #ffffff;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8fafc;
             min-height: 100vh;
-            color: #1a1a1a;
+            color: #1e293b;
+            -webkit-font-smoothing: antialiased;
         }
-        .header {
+
+        /* Hero Section */
+        .hero {
+            position: relative;
             text-align: center;
-            padding: 40px 20px;
-            background: #fafafa;
-            border-bottom: 2px solid #000;
+            padding: 80px 20px 60px;
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #f8fafc 100%);
+            overflow: hidden;
         }
-        .header h1 {
-            font-size: 2.5em;
-            color: #000000;
-            margin-bottom: 10px;
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(circle at 1px 1px, #e2e8f0 1px, transparent 0);
+            background-size: 40px 40px;
+            opacity: 0.5;
         }
-        .header p {
-            font-size: 1.1em;
-            color: #555555;
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
         }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 100px;
+            font-size: 0.8em;
+            font-weight: 500;
+            color: #6366f1;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .hero h1 {
+            font-size: 3.2em;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 12px;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            font-size: 1.15em;
+            color: #64748b;
+            font-weight: 400;
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Container */
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 20px 24px 60px;
         }
+
+        /* Section */
+        .section {
+            margin-bottom: 48px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .section-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: #6366f1;
+            color: white;
+            border-radius: 8px;
+            font-size: 0.8em;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
         .section-title {
-            font-size: 1.8em;
-            color: #000000;
-            margin: 30px 0 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ddd;
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.02em;
         }
+
+        /* Grid */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
         }
+
+        /* Cards */
         .card {
-            background: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            padding: 25px;
-            transition: all 0.3s ease;
+            position: relative;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 24px 24px 20px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             text-decoration: none;
             color: inherit;
             display: block;
+            overflow: hidden;
         }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #e2e8f0;
+            transition: background 0.2s ease;
+        }
+
         .card:hover {
-            transform: translateY(-5px);
-            border-color: #000000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            background: #f5f5f5;
+            transform: translateY(-3px);
+            border-color: #c7d2fe;
+            box-shadow: 0 12px 40px -8px rgba(99, 102, 241, 0.12), 0 4px 12px rgba(0,0,0,0.04);
         }
+
+        .card:hover::before {
+            background: #6366f1;
+        }
+
+        .card:active {
+            transform: translateY(-1px);
+        }
+
         .card h3 {
-            color: #000000;
-            font-size: 1.3em;
-            margin-bottom: 10px;
+            font-size: 1.05em;
+            font-weight: 650;
+            color: #0f172a;
+            margin-bottom: 8px;
+            letter-spacing: -0.01em;
         }
+
         .card p {
-            color: #555555;
+            color: #64748b;
             line-height: 1.6;
-            font-size: 0.95em;
+            font-size: 0.88em;
         }
+
         .card .difficulty {
             display: inline-block;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 0.75em;
-            margin-top: 10px;
-            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 0.7em;
+            margin-top: 14px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
         }
-        .easy { background: #f0f0f0; color: #333; }
-        .medium { background: #e8e8e8; color: #333; }
-        .hard { background: #ddd; color: #333; }
+
+        .easy {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+
+        .medium {
+            background: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fde68a;
+        }
+
+        .hard {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        /* Footer */
         .footer {
             text-align: center;
-            padding: 30px;
-            color: #666666;
-            border-top: 1px solid #ddd;
+            padding: 32px 20px;
+            color: #94a3b8;
+            font-size: 0.85em;
+            border-top: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .footer span {
+            color: #6366f1;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.2em; }
+            .hero { padding: 50px 20px 40px; }
+            .grid { grid-template-columns: 1fr; }
+            .container { padding: 20px 16px 40px; }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Graph Algorithms</h1>
-        <p>Complete guide with visualizations, Java & C++ code</p>
+    <div class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">20 topics with code & visuals</div>
+            <h1>Graph Algorithms</h1>
+            <p>Complete guide with interactive visualizations, Java, C++ & Python implementations</p>
+        </div>
     </div>
 
     <div class="container">
-        <h2 class="section-title">1. Graph Basics & Traversals</h2>
-        <div class="grid">
-            <a class="card" href="basics.html">
-                <h3>Graph Representation</h3>
-                <p>Adjacency Matrix, Adjacency List, Edge List. Directed vs Undirected graphs. Weighted vs Unweighted.</p>
-                <span class="difficulty easy">Easy</span>
-            </a>
-            <a class="card" href="bfs.html">
-                <h3>BFS (Breadth-First Search)</h3>
-                <p>Level-order traversal using queue. Shortest path in unweighted graph. Connected components.</p>
-                <span class="difficulty easy">Easy</span>
-            </a>
-            <a class="card" href="dfs.html">
-                <h3>DFS (Depth-First Search)</h3>
-                <p>Stack-based deep exploration. Backtracking. Discovery & finish times. DFS tree edges.</p>
-                <span class="difficulty easy">Easy</span>
-            </a>
+        <div class="section">
+            <div class="section-header">
+                <span class="section-number">1</span>
+                <h2 class="section-title">Graph Basics & Traversals</h2>
+            </div>
+            <div class="grid">
+                <a class="card" href="basics.html">
+                    <h3>Graph Representation</h3>
+                    <p>Adjacency Matrix, Adjacency List, Edge List. Directed vs Undirected graphs. Weighted vs Unweighted.</p>
+                    <span class="difficulty easy">Easy</span>
+                </a>
+                <a class="card" href="bfs.html">
+                    <h3>BFS (Breadth-First Search)</h3>
+                    <p>Level-order traversal using queue. Shortest path in unweighted graph. Connected components.</p>
+                    <span class="difficulty easy">Easy</span>
+                </a>
+                <a class="card" href="dfs.html">
+                    <h3>DFS (Depth-First Search)</h3>
+                    <p>Stack-based deep exploration. Backtracking. Discovery & finish times. DFS tree edges.</p>
+                    <span class="difficulty easy">Easy</span>
+                </a>
+            </div>
         </div>
 
-        <h2 class="section-title">2. Cycle Detection</h2>
-        <div class="grid">
-            <a class="card" href="cycle-undirected.html">
-                <h3>Cycle in Undirected Graph</h3>
-                <p>Using DFS with parent tracking. Using DSU (Union-Find). Detecting back edges.</p>
-                <span class="difficulty easy">Easy</span>
-            </a>
-            <a class="card" href="cycle-directed.html">
-                <h3>Cycle in Directed Graph</h3>
-                <p>Using DFS coloring (White-Gray-Black). Using Kahn's BFS. Back edge detection.</p>
-                <span class="difficulty medium">Medium</span>
-            </a>
+        <div class="section">
+            <div class="section-header">
+                <span class="section-number">2</span>
+                <h2 class="section-title">Cycle Detection</h2>
+            </div>
+            <div class="grid">
+                <a class="card" href="cycle-undirected.html">
+                    <h3>Cycle in Undirected Graph</h3>
+                    <p>Using DFS with parent tracking. Using DSU (Union-Find). Detecting back edges.</p>
+                    <span class="difficulty easy">Easy</span>
+                </a>
+                <a class="card" href="cycle-directed.html">
+                    <h3>Cycle in Directed Graph</h3>
+                    <p>Using DFS coloring (White-Gray-Black). Using Kahn's BFS. Back edge detection.</p>
+                    <span class="difficulty medium">Medium</span>
+                </a>
+            </div>
         </div>
 
-        <h2 class="section-title">3. Topological Sort & DAG</h2>
-        <div class="grid">
-            <a class="card" href="topological-sort.html">
-                <h3>Topological Sort (DFS)</h3>
-                <p>Linear ordering of vertices in DAG. Using DFS + stack. Applications in scheduling.</p>
-                <span class="difficulty medium">Medium</span>
-            </a>
-            <a class="card" href="kahns-algo.html">
-                <h3>Kahn's Algorithm (BFS)</h3>
-                <p>Topological sort using in-degree + queue. Also detects cycles. Level-wise processing.</p>
-                <span class="difficulty medium">Medium</span>
-            </a>
-            <a class="card" href="dag.html">
-                <h3>DAG Shortest Path</h3>
-                <p>Shortest path in DAG using topological order. Relaxation. Longest path in DAG.</p>
-                <span class="difficulty medium">Medium</span>
-            </a>
+        <div class="section">
+            <div class="section-header">
+                <span class="section-number">3</span>
+                <h2 class="section-title">Topological Sort & DAG</h2>
+            </div>
+            <div class="grid">
+                <a class="card" href="topological-sort.html">
+                    <h3>Topological Sort (DFS)</h3>
+                    <p>Linear ordering of vertices in DAG. Using DFS + stack. Applications in scheduling.</p>
+                    <span class="difficulty medium">Medium</span>
+                </a>
+                <a class="card" href="kahns-algo.html">
+                    <h3>Kahn's Algorithm (BFS)</h3>
+                    <p>Topological sort using in-degree + queue. Also detects cycles. Level-wise processing.</p>
+                    <span class="difficulty medium">Medium</span>
+                </a>
+                <a class="card" href="dag.html">
+                    <h3>DAG Shortest Path</h3>
+                    <p>Shortest path in DAG using topological order. Relaxation. Longest path in DAG.</p>
+                    <span class="difficulty medium">Medium</span>
+                </a>
+            </div>
         </div>
 
-        <h2 class="section-title">4. Shortest Path Algorithms</h2>
-        <div class="grid">
-            <a class="card" href="dijkstra.html">
-                <h3>Dijkstra's Algorithm</h3>
-                <p>Single source shortest path. Greedy + Priority Queue. Non-negative weights only.</p>
-                <span class="difficulty medium">Medium</span>
-            </a>
-            <a class="card" href="bellman-ford.html">
-                <h3>Bellman-Ford Algorithm</h3>
-                <p>Handles negative weights. Detects negative cycles. Relax all edges V-1 times.</p>
-                <span class="difficulty medium">Medium</span>
-            </a>
-            <a class="card" href="floyd-warshall.html">
-                <h3>Floyd-Warshall Algorithm</h3>
-                <p>All-pairs shortest path. Dynamic Programming on intermediate vertices. O(V³).</p>
-                <span class="difficulty medium">Medium</span>
-            </a>
-            <a class="card" href="shortest-path-summary.html">
-                <h3>All Shortest Paths Summary</h3>
-                <p>When to use which algorithm. 0-1 BFS. Multi-source BFS. Comparison table.</p>
-                <span class="difficulty medium">Medium</span>
-            </a>
+        <div class="section">
+            <div class="section-header">
+                <span class="section-number">4</span>
+                <h2 class="section-title">Shortest Path Algorithms</h2>
+            </div>
+            <div class="grid">
+                <a class="card" href="dijkstra.html">
+                    <h3>Dijkstra's Algorithm</h3>
+                    <p>Single source shortest path. Greedy + Priority Queue. Non-negative weights only.</p>
+                    <span class="difficulty medium">Medium</span>
+                </a>
+                <a class="card" href="bellman-ford.html">
+                    <h3>Bellman-Ford Algorithm</h3>
+                    <p>Handles negative weights. Detects negative cycles. Relax all edges V-1 times.</p>
+                    <span class="difficulty medium">Medium</span>
+                </a>
+                <a class="card" href="floyd-warshall.html">
+                    <h3>Floyd-Warshall Algorithm</h3>
+                    <p>All-pairs shortest path. Dynamic Programming on intermediate vertices. O(V^3).</p>
+                    <span class="difficulty medium">Medium</span>
+                </a>
+                <a class="card" href="shortest-path-summary.html">
+                    <h3>All Shortest Paths Summary</h3>
+                    <p>When to use which algorithm. 0-1 BFS. Multi-source BFS. Comparison table.</p>
+                    <span class="difficulty medium">Medium</span>
+                </a>
+            </div>
         </div>
 
-        <h2 class="section-title">5. Minimum Spanning Tree</h2>
-        <div class="grid">
-            <a class="card" href="prims.html">
-                <h3>Prim's Algorithm</h3>
-                <p>Grow MST from a vertex. Greedy + Priority Queue. Dense graph friendly.</p>
-                <span class="difficulty medium">Medium</span>
-            </a>
-            <a class="card" href="kruskal.html">
-                <h3>Kruskal's Algorithm</h3>
-                <p>Sort edges + Union-Find. Sparse graph friendly. Forest merging approach.</p>
-                <span class="difficulty medium">Medium</span>
-            </a>
+        <div class="section">
+            <div class="section-header">
+                <span class="section-number">5</span>
+                <h2 class="section-title">Minimum Spanning Tree</h2>
+            </div>
+            <div class="grid">
+                <a class="card" href="prims.html">
+                    <h3>Prim's Algorithm</h3>
+                    <p>Grow MST from a vertex. Greedy + Priority Queue. Dense graph friendly.</p>
+                    <span class="difficulty medium">Medium</span>
+                </a>
+                <a class="card" href="kruskal.html">
+                    <h3>Kruskal's Algorithm</h3>
+                    <p>Sort edges + Union-Find. Sparse graph friendly. Forest merging approach.</p>
+                    <span class="difficulty medium">Medium</span>
+                </a>
+            </div>
         </div>
 
-        <h2 class="section-title">6. Disjoint Set Union (DSU / Union-Find)</h2>
-        <div class="grid">
-            <a class="card" href="dsu.html">
-                <h3>DSU / Union-Find</h3>
-                <p>Path compression + Union by rank. Near O(1) operations. Connected components dynamically.</p>
-                <span class="difficulty medium">Medium</span>
-            </a>
+        <div class="section">
+            <div class="section-header">
+                <span class="section-number">6</span>
+                <h2 class="section-title">Disjoint Set Union (DSU / Union-Find)</h2>
+            </div>
+            <div class="grid">
+                <a class="card" href="dsu.html">
+                    <h3>DSU / Union-Find</h3>
+                    <p>Path compression + Union by rank. Near O(1) operations. Connected components dynamically.</p>
+                    <span class="difficulty medium">Medium</span>
+                </a>
+            </div>
         </div>
 
-        <h2 class="section-title">7. Advanced Graph Concepts</h2>
-        <div class="grid">
-            <a class="card" href="implicit-graph.html">
-                <h3>Implicit Graphs</h3>
-                <p>Grid as graph. State-space search. Word ladder. Knight moves. No explicit adjacency list.</p>
-                <span class="difficulty medium">Medium</span>
-            </a>
-            <a class="card" href="euler-tour.html">
-                <h3>Euler Tour / Path</h3>
-                <p>Visit every edge exactly once. Hierholzer's algorithm. Euler circuit vs path. Degree conditions.</p>
-                <span class="difficulty hard">Hard</span>
-            </a>
-            <a class="card" href="strongly-connected.html">
-                <h3>Strongly Connected Components</h3>
-                <p>Kosaraju's & Tarjan's algorithms. Condensation graph. 2-SAT connection.</p>
-                <span class="difficulty hard">Hard</span>
-            </a>
-            <a class="card" href="bridges-articulation.html">
-                <h3>Bridges & Articulation Points</h3>
-                <p>Critical edges and vertices. Tarjan's DFS-based approach. Low-link values.</p>
-                <span class="difficulty hard">Hard</span>
-            </a>
-            <a class="card" href="bipartite.html">
-                <h3>Bipartite Graph & Coloring</h3>
-                <p>2-colorable check via BFS/DFS. Bipartite matching. Odd cycle detection.</p>
-                <span class="difficulty medium">Medium</span>
-            </a>
+        <div class="section">
+            <div class="section-header">
+                <span class="section-number">7</span>
+                <h2 class="section-title">Advanced Graph Concepts</h2>
+            </div>
+            <div class="grid">
+                <a class="card" href="implicit-graph.html">
+                    <h3>Implicit Graphs</h3>
+                    <p>Grid as graph. State-space search. Word ladder. Knight moves. No explicit adjacency list.</p>
+                    <span class="difficulty medium">Medium</span>
+                </a>
+                <a class="card" href="euler-tour.html">
+                    <h3>Euler Tour / Path</h3>
+                    <p>Visit every edge exactly once. Hierholzer's algorithm. Euler circuit vs path. Degree conditions.</p>
+                    <span class="difficulty hard">Hard</span>
+                </a>
+                <a class="card" href="strongly-connected.html">
+                    <h3>Strongly Connected Components</h3>
+                    <p>Kosaraju's & Tarjan's algorithms. Condensation graph. 2-SAT connection.</p>
+                    <span class="difficulty hard">Hard</span>
+                </a>
+                <a class="card" href="bridges-articulation.html">
+                    <h3>Bridges & Articulation Points</h3>
+                    <p>Critical edges and vertices. Tarjan's DFS-based approach. Low-link values.</p>
+                    <span class="difficulty hard">Hard</span>
+                </a>
+                <a class="card" href="bipartite.html">
+                    <h3>Bipartite Graph & Coloring</h3>
+                    <p>2-colorable check via BFS/DFS. Bipartite matching. Odd cycle detection.</p>
+                    <span class="difficulty medium">Medium</span>
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="footer">
-        <p>Graph Algorithms Complete Guide | Java & C++ | With Visualizations</p>
+        <p>Graph Algorithms Complete Guide | <span>Java, C++ & Python</span> | With Visualizations</p>
     </div>
 </body>
 </html>
