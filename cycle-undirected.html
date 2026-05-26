@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cycle Detection - Undirected Graph</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh; color: #1a1a1a; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .back-link { color: #000000; text-decoration: none; font-size: 1.1em; display: inline-block; margin-bottom: 20px; }
+        .back-link:hover { text-decoration: underline; }
+        h1 { color: #000000; font-size: 2.2em; margin-bottom: 10px; }
+        h2 { color: #000000; font-size: 1.5em; margin: 30px 0 15px; }
+        p, li { line-height: 1.8; color: #333333; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 15px; }
+        .visual { background: #f5f5f5; border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin: 20px 0; text-align: center; }
+        .visual pre { color: #000000; font-size: 1em; display: inline-block; text-align: left; }
+        .code-container { margin: 20px 0; border-radius: 10px; overflow: hidden; border: 1px solid #ddd; }
+        .code-tabs { display: flex; background: #f0f0f0; }
+        .code-tab { padding: 10px 25px; cursor: pointer; border: none; background: transparent; color: #555555; font-size: 0.95em; border-bottom: 2px solid transparent; }
+        .code-tab.active { color: #000000; border-bottom-color: #000000; background: #f5f5f5; }
+        .code-content { display: none; background: #f5f5f5; padding: 20px; overflow-x: auto; }
+        .code-content.active { display: block; }
+        .code-content pre { color: #1a1a1a; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9em; line-height: 1.6; }
+        .keyword { color: #7b1fa2; }
+        .comment { color: #6a737d; }
+        .number { color: #005cc5; }
+        .string { color: #22863a; }
+        .note { background: #f5f5f5; border-left: 4px solid #000; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Index</a>
+        <h1>Cycle Detection in Undirected Graph</h1>
+        <p>A cycle exists if we can start from a node and come back to it without retracing our steps.</p>
+
+        <h2>The Idea</h2>
+        <div class="visual">
+<pre>
+  Has Cycle:                No Cycle (Tree):
+
+    0 --- 1                    0
+    |     |                   / \
+    |     |                  1   2
+    3 --- 2                 / \
+                           3   4
+  0→1→2→3→0 = CYCLE!
+</pre>
+        </div>
+
+        <h2>Method 1: DFS with Parent Tracking</h2>
+        <p><strong>Key Insight:</strong> During DFS, if we find a visited node that is NOT our parent, we found a cycle!</p>
+
+        <div class="visual">
+<pre>
+  DFS from 0:
+  Visit 0 (parent = -1)
+  Visit 1 (parent = 0)
+  Visit 2 (parent = 1)
+  Visit 3 (parent = 2) → neighbor 0 is visited AND not parent(2) → CYCLE!
+
+  Why check parent? Because in undirected graph:
+  0 --- 1 means both 0→1 and 1→0 exist
+  When we go 0→1, neighbor 0 is visited but it's the parent, so it's NOT a cycle
+</pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode(this, 'java1')">Java</button>
+                <button class="code-tab" onclick="showCode(this, 'cpp1')">C++</button>
+            </div>
+            <div id="java1" class="code-content active">
+<pre>
+<span class="keyword">import</span> java.util.*;
+
+<span class="keyword">public class</span> CycleUndirected {
+    <span class="keyword">static boolean</span> hasCycleDFS(<span class="keyword">int</span> node, <span class="keyword">int</span> parent,
+                               List&lt;List&lt;Integer&gt;&gt; adj, <span class="keyword">boolean</span>[] visited) {
+        visited[node] = <span class="keyword">true</span>;
+
+        <span class="keyword">for</span> (<span class="keyword">int</span> neighbor : adj.get(node)) {
+            <span class="keyword">if</span> (!visited[neighbor]) {
+                <span class="comment">// Go deeper</span>
+                <span class="keyword">if</span> (hasCycleDFS(neighbor, node, adj, visited))
+                    <span class="keyword">return true</span>;
+            }
+            <span class="keyword">else if</span> (neighbor != parent) {
+                <span class="comment">// Visited node that's not our parent = CYCLE!</span>
+                <span class="keyword">return true</span>;
+            }
+        }
+        <span class="keyword">return false</span>;
+    }
+
+    <span class="keyword">static boolean</span> hasCycle(List&lt;List&lt;Integer&gt;&gt; adj, <span class="keyword">int</span> V) {
+        <span class="keyword">boolean</span>[] visited = <span class="keyword">new boolean</span>[V];
+
+        <span class="comment">// Check each component (graph might be disconnected)</span>
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) {
+            <span class="keyword">if</span> (!visited[i]) {
+                <span class="keyword">if</span> (hasCycleDFS(i, -<span class="number">1</span>, adj, visited))
+                    <span class="keyword">return true</span>;
+            }
+        }
+        <span class="keyword">return false</span>;
+    }
+
+    <span class="keyword">public static void</span> main(String[] args) {
+        <span class="keyword">int</span> V = <span class="number">4</span>;
+        List&lt;List&lt;Integer&gt;&gt; adj = <span class="keyword">new</span> ArrayList&lt;&gt;();
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) adj.add(<span class="keyword">new</span> ArrayList&lt;&gt;());
+
+        <span class="comment">// 0-1-2-3-0 (has cycle)</span>
+        adj.get(<span class="number">0</span>).add(<span class="number">1</span>); adj.get(<span class="number">1</span>).add(<span class="number">0</span>);
+        adj.get(<span class="number">1</span>).add(<span class="number">2</span>); adj.get(<span class="number">2</span>).add(<span class="number">1</span>);
+        adj.get(<span class="number">2</span>).add(<span class="number">3</span>); adj.get(<span class="number">3</span>).add(<span class="number">2</span>);
+        adj.get(<span class="number">3</span>).add(<span class="number">0</span>); adj.get(<span class="number">0</span>).add(<span class="number">3</span>);
+
+        System.out.println(<span class="string">"Has cycle: "</span> + hasCycle(adj, V)); <span class="comment">// true</span>
+    }
+}
+</pre>
+            </div>
+            <div id="cpp1" class="code-content">
+<pre>
+<span class="keyword">#include</span> &lt;bits/stdc++.h&gt;
+<span class="keyword">using namespace</span> std;
+
+<span class="keyword">bool</span> hasCycleDFS(<span class="keyword">int</span> node, <span class="keyword">int</span> parent,
+                vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt;&amp; adj, vector&lt;<span class="keyword">bool</span>&gt;&amp; visited) {
+    visited[node] = <span class="keyword">true</span>;
+
+    <span class="keyword">for</span> (<span class="keyword">int</span> neighbor : adj[node]) {
+        <span class="keyword">if</span> (!visited[neighbor]) {
+            <span class="keyword">if</span> (hasCycleDFS(neighbor, node, adj, visited))
+                <span class="keyword">return true</span>;
+        }
+        <span class="keyword">else if</span> (neighbor != parent) {
+            <span class="keyword">return true</span>; <span class="comment">// CYCLE found!</span>
+        }
+    }
+    <span class="keyword">return false</span>;
+}
+
+<span class="keyword">bool</span> hasCycle(vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt;&amp; adj, <span class="keyword">int</span> V) {
+    vector&lt;<span class="keyword">bool</span>&gt; visited(V, <span class="keyword">false</span>);
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) {
+        <span class="keyword">if</span> (!visited[i]) {
+            <span class="keyword">if</span> (hasCycleDFS(i, -<span class="number">1</span>, adj, visited))
+                <span class="keyword">return true</span>;
+        }
+    }
+    <span class="keyword">return false</span>;
+}
+
+<span class="keyword">int</span> main() {
+    <span class="keyword">int</span> V = <span class="number">4</span>;
+    vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt; adj(V);
+    adj[<span class="number">0</span>].push_back(<span class="number">1</span>); adj[<span class="number">1</span>].push_back(<span class="number">0</span>);
+    adj[<span class="number">1</span>].push_back(<span class="number">2</span>); adj[<span class="number">2</span>].push_back(<span class="number">1</span>);
+    adj[<span class="number">2</span>].push_back(<span class="number">3</span>); adj[<span class="number">3</span>].push_back(<span class="number">2</span>);
+    adj[<span class="number">3</span>].push_back(<span class="number">0</span>); adj[<span class="number">0</span>].push_back(<span class="number">3</span>);
+
+    cout &lt;&lt; <span class="string">"Has cycle: "</span> &lt;&lt; (hasCycle(adj, V) ? <span class="string">"Yes"</span> : <span class="string">"No"</span>) &lt;&lt; endl;
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+</pre>
+            </div>
+        </div>
+
+        <h2>Method 2: Using DSU (Union-Find)</h2>
+        <p><strong>Key Insight:</strong> Process edges one by one. If both endpoints are already in the same set → adding this edge creates a cycle!</p>
+
+        <div class="visual">
+<pre>
+  Edges: (0,1), (1,2), (2,3), (3,0)
+
+  Process (0,1): union(0,1) → Set: {0,1}
+  Process (1,2): union(1,2) → Set: {0,1,2}
+  Process (2,3): union(2,3) → Set: {0,1,2,3}
+  Process (3,0): find(3)=0, find(0)=0 → SAME SET → CYCLE!
+</pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode(this, 'java2')">Java</button>
+                <button class="code-tab" onclick="showCode(this, 'cpp2')">C++</button>
+            </div>
+            <div id="java2" class="code-content active">
+<pre>
+<span class="keyword">public class</span> CycleUnionFind {
+    <span class="keyword">static int</span>[] parent, rank;
+
+    <span class="keyword">static int</span> find(<span class="keyword">int</span> x) {
+        <span class="keyword">if</span> (parent[x] != x)
+            parent[x] = find(parent[x]); <span class="comment">// path compression</span>
+        <span class="keyword">return</span> parent[x];
+    }
+
+    <span class="keyword">static boolean</span> union(<span class="keyword">int</span> x, <span class="keyword">int</span> y) {
+        <span class="keyword">int</span> px = find(x), py = find(y);
+        <span class="keyword">if</span> (px == py) <span class="keyword">return false</span>; <span class="comment">// already same set = cycle!</span>
+
+        <span class="keyword">if</span> (rank[px] &lt; rank[py]) parent[px] = py;
+        <span class="keyword">else if</span> (rank[px] &gt; rank[py]) parent[py] = px;
+        <span class="keyword">else</span> { parent[py] = px; rank[px]++; }
+        <span class="keyword">return true</span>;
+    }
+
+    <span class="keyword">static boolean</span> hasCycle(<span class="keyword">int</span>[][] edges, <span class="keyword">int</span> V) {
+        parent = <span class="keyword">new int</span>[V];
+        rank = <span class="keyword">new int</span>[V];
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) parent[i] = i;
+
+        <span class="keyword">for</span> (<span class="keyword">int</span>[] edge : edges) {
+            <span class="keyword">if</span> (!union(edge[<span class="number">0</span>], edge[<span class="number">1</span>]))
+                <span class="keyword">return true</span>; <span class="comment">// cycle detected!</span>
+        }
+        <span class="keyword">return false</span>;
+    }
+}
+</pre>
+            </div>
+            <div id="cpp2" class="code-content">
+<pre>
+<span class="keyword">#include</span> &lt;bits/stdc++.h&gt;
+<span class="keyword">using namespace</span> std;
+
+vector&lt;<span class="keyword">int</span>&gt; parent, rnk;
+
+<span class="keyword">int</span> find(<span class="keyword">int</span> x) {
+    <span class="keyword">if</span> (parent[x] != x)
+        parent[x] = find(parent[x]);
+    <span class="keyword">return</span> parent[x];
+}
+
+<span class="keyword">bool</span> unite(<span class="keyword">int</span> x, <span class="keyword">int</span> y) {
+    <span class="keyword">int</span> px = find(x), py = find(y);
+    <span class="keyword">if</span> (px == py) <span class="keyword">return false</span>; <span class="comment">// cycle!</span>
+
+    <span class="keyword">if</span> (rnk[px] &lt; rnk[py]) parent[px] = py;
+    <span class="keyword">else if</span> (rnk[px] &gt; rnk[py]) parent[py] = px;
+    <span class="keyword">else</span> { parent[py] = px; rnk[px]++; }
+    <span class="keyword">return true</span>;
+}
+
+<span class="keyword">bool</span> hasCycle(vector&lt;pair&lt;<span class="keyword">int</span>,<span class="keyword">int</span>&gt;&gt;&amp; edges, <span class="keyword">int</span> V) {
+    parent.resize(V); rnk.resize(V, <span class="number">0</span>);
+    iota(parent.begin(), parent.end(), <span class="number">0</span>);
+
+    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; [u, v] : edges) {
+        <span class="keyword">if</span> (!unite(u, v)) <span class="keyword">return true</span>;
+    }
+    <span class="keyword">return false</span>;
+}
+</pre>
+            </div>
+        </div>
+
+        <h2>Quick Summary</h2>
+        <div class="note">
+            <ul>
+                <li><strong>DFS + Parent:</strong> Easy to implement, works component-wise. O(V+E)</li>
+                <li><strong>Union-Find:</strong> Process edge-by-edge. Great when edges come one at a time. Nearly O(E)</li>
+                <li><strong>Simple rule:</strong> Undirected graph with V vertices → if edges >= V, guaranteed to have a cycle</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function showCode(btn, id) {
+            const container = btn.closest('.code-container');
+            container.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+            container.querySelectorAll('.code-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(id).classList.add('active');
+        }
+    </script>
+</body>
+</html>

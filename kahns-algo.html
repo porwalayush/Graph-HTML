@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kahn's Algorithm (BFS Topological Sort)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh; color: #1a1a1a; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .back-link { color: #000000; text-decoration: none; font-size: 1.1em; display: inline-block; margin-bottom: 20px; }
+        .back-link:hover { text-decoration: underline; }
+        h1 { color: #000000; font-size: 2.2em; margin-bottom: 10px; }
+        h2 { color: #000000; font-size: 1.5em; margin: 30px 0 15px; }
+        p, li { line-height: 1.8; color: #333333; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 15px; }
+        .visual { background: #f5f5f5; border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin: 20px 0; text-align: center; }
+        .visual pre { color: #000000; font-size: 1em; display: inline-block; text-align: left; }
+        .code-container { margin: 20px 0; border-radius: 10px; overflow: hidden; border: 1px solid #ddd; }
+        .code-tabs { display: flex; background: #f0f0f0; }
+        .code-tab { padding: 10px 25px; cursor: pointer; border: none; background: transparent; color: #555555; font-size: 0.95em; border-bottom: 2px solid transparent; }
+        .code-tab.active { color: #000000; border-bottom-color: #000000; background: #f5f5f5; }
+        .code-content { display: none; background: #f5f5f5; padding: 20px; overflow-x: auto; }
+        .code-content.active { display: block; }
+        .code-content pre { color: #1a1a1a; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9em; line-height: 1.6; }
+        .keyword { color: #7b1fa2; }
+        .comment { color: #6a737d; }
+        .number { color: #005cc5; }
+        .string { color: #22863a; }
+        .note { background: #f5f5f5; border-left: 4px solid #000; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
+        .step-box { background: #fafafa; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 10px 0; }
+        .step-box strong { color: #000000; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Index</a>
+        <h1>Kahn's Algorithm (BFS Topological Sort)</h1>
+        <p>BFS-based topological sort using <strong>in-degree</strong> (number of incoming edges). Also detects cycles!</p>
+
+        <h2>The Idea</h2>
+        <div class="visual">
+<pre>
+  In-degree = number of arrows pointing INTO a node
+
+  Graph: 5→0, 5→2, 4→0, 4→1, 2→3, 3→1
+
+  In-degrees:
+  Node 0: 2 (from 5, 4)
+  Node 1: 2 (from 4, 3)
+  Node 2: 1 (from 5)
+  Node 3: 1 (from 2)
+  Node 4: 0  ← START HERE (no dependencies!)
+  Node 5: 0  ← START HERE (no dependencies!)
+
+  Nodes with in-degree 0 = "ready to process" (no prerequisites)
+</pre>
+        </div>
+
+        <h2>Algorithm Steps</h2>
+        <ol>
+            <li>Calculate in-degree of all nodes</li>
+            <li>Add all nodes with in-degree 0 to queue</li>
+            <li>While queue not empty:
+                <ul>
+                    <li>Remove node from queue → add to result</li>
+                    <li>For each neighbor: decrease their in-degree by 1</li>
+                    <li>If neighbor's in-degree becomes 0 → add to queue</li>
+                </ul>
+            </li>
+            <li>If result size ≠ V → cycle exists!</li>
+        </ol>
+
+        <h2>Visual Walkthrough</h2>
+        <div class="step-box">
+            <strong>Initial:</strong> indeg = [2,2,1,1,0,0]. Queue = [4,5]<br>
+            <strong>Process 4:</strong> Reduce indeg of 0,1. indeg = [1,1,1,1,-,-]. Queue = [5]<br>
+            <strong>Process 5:</strong> Reduce indeg of 0,2. indeg = [0,1,0,1,-,-]. Queue = [0,2] (became 0!)<br>
+            <strong>Process 0:</strong> No outgoing edges. Queue = [2]<br>
+            <strong>Process 2:</strong> Reduce indeg of 3. indeg = [-,1,-,0,-,-]. Queue = [3]<br>
+            <strong>Process 3:</strong> Reduce indeg of 1. indeg = [-,0,-,-,-,-]. Queue = [1]<br>
+            <strong>Process 1:</strong> Done!<br>
+            <strong>Result:</strong> [4, 5, 0, 2, 3, 1] ✓
+        </div>
+
+        <div class="code-container">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode(this, 'java1')">Java</button>
+                <button class="code-tab" onclick="showCode(this, 'cpp1')">C++</button>
+            </div>
+            <div id="java1" class="code-content active">
+<pre>
+<span class="keyword">import</span> java.util.*;
+
+<span class="keyword">public class</span> KahnsAlgorithm {
+    <span class="keyword">static</span> List&lt;Integer&gt; topoSort(List&lt;List&lt;Integer&gt;&gt; adj, <span class="keyword">int</span> V) {
+        <span class="comment">// Step 1: Calculate in-degree of each node</span>
+        <span class="keyword">int</span>[] indegree = <span class="keyword">new int</span>[V];
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++)
+            <span class="keyword">for</span> (<span class="keyword">int</span> nb : adj.get(i))
+                indegree[nb]++;
+
+        <span class="comment">// Step 2: Add all nodes with in-degree 0 to queue</span>
+        Queue&lt;Integer&gt; queue = <span class="keyword">new</span> LinkedList&lt;&gt;();
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++)
+            <span class="keyword">if</span> (indegree[i] == <span class="number">0</span>) queue.add(i);
+
+        List&lt;Integer&gt; result = <span class="keyword">new</span> ArrayList&lt;&gt;();
+
+        <span class="comment">// Step 3: Process</span>
+        <span class="keyword">while</span> (!queue.isEmpty()) {
+            <span class="keyword">int</span> node = queue.poll();
+            result.add(node);
+
+            <span class="keyword">for</span> (<span class="keyword">int</span> neighbor : adj.get(node)) {
+                indegree[neighbor]--;
+                <span class="keyword">if</span> (indegree[neighbor] == <span class="number">0</span>)
+                    queue.add(neighbor);
+            }
+        }
+
+        <span class="comment">// Step 4: Check for cycle</span>
+        <span class="keyword">if</span> (result.size() != V) {
+            System.out.println(<span class="string">"Cycle detected! Topo sort impossible."</span>);
+            <span class="keyword">return new</span> ArrayList&lt;&gt;();
+        }
+
+        <span class="keyword">return</span> result;
+    }
+
+    <span class="keyword">public static void</span> main(String[] args) {
+        <span class="keyword">int</span> V = <span class="number">6</span>;
+        List&lt;List&lt;Integer&gt;&gt; adj = <span class="keyword">new</span> ArrayList&lt;&gt;();
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) adj.add(<span class="keyword">new</span> ArrayList&lt;&gt;());
+
+        adj.get(<span class="number">5</span>).add(<span class="number">0</span>); adj.get(<span class="number">5</span>).add(<span class="number">2</span>);
+        adj.get(<span class="number">4</span>).add(<span class="number">0</span>); adj.get(<span class="number">4</span>).add(<span class="number">1</span>);
+        adj.get(<span class="number">2</span>).add(<span class="number">3</span>); adj.get(<span class="number">3</span>).add(<span class="number">1</span>);
+
+        System.out.println(<span class="string">"Kahn's Topo Sort: "</span> + topoSort(adj, V));
+    }
+}
+</pre>
+            </div>
+            <div id="cpp1" class="code-content">
+<pre>
+<span class="keyword">#include</span> &lt;bits/stdc++.h&gt;
+<span class="keyword">using namespace</span> std;
+
+vector&lt;<span class="keyword">int</span>&gt; topoSort(vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt;&amp; adj, <span class="keyword">int</span> V) {
+    vector&lt;<span class="keyword">int</span>&gt; indegree(V, <span class="number">0</span>);
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++)
+        <span class="keyword">for</span> (<span class="keyword">int</span> nb : adj[i])
+            indegree[nb]++;
+
+    queue&lt;<span class="keyword">int</span>&gt; q;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++)
+        <span class="keyword">if</span> (indegree[i] == <span class="number">0</span>) q.push(i);
+
+    vector&lt;<span class="keyword">int</span>&gt; result;
+    <span class="keyword">while</span> (!q.empty()) {
+        <span class="keyword">int</span> node = q.front(); q.pop();
+        result.push_back(node);
+
+        <span class="keyword">for</span> (<span class="keyword">int</span> nb : adj[node]) {
+            <span class="keyword">if</span> (--indegree[nb] == <span class="number">0</span>)
+                q.push(nb);
+        }
+    }
+
+    <span class="keyword">if</span> (result.size() != V) {
+        cout &lt;&lt; <span class="string">"Cycle detected!"</span> &lt;&lt; endl;
+        <span class="keyword">return</span> {};
+    }
+    <span class="keyword">return</span> result;
+}
+
+<span class="keyword">int</span> main() {
+    <span class="keyword">int</span> V = <span class="number">6</span>;
+    vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt; adj(V);
+    adj[<span class="number">5</span>].push_back(<span class="number">0</span>); adj[<span class="number">5</span>].push_back(<span class="number">2</span>);
+    adj[<span class="number">4</span>].push_back(<span class="number">0</span>); adj[<span class="number">4</span>].push_back(<span class="number">1</span>);
+    adj[<span class="number">2</span>].push_back(<span class="number">3</span>); adj[<span class="number">3</span>].push_back(<span class="number">1</span>);
+
+    vector&lt;<span class="keyword">int</span>&gt; result = topoSort(adj, V);
+    <span class="keyword">for</span> (<span class="keyword">int</span> x : result) cout &lt;&lt; x &lt;&lt; <span class="string">" "</span>;
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+</pre>
+            </div>
+        </div>
+
+        <h2>Kahn's vs DFS Topological Sort</h2>
+        <div class="note">
+            <ul>
+                <li><strong>Kahn's (BFS):</strong> Iterative, easy to detect cycles, gives level-wise ordering</li>
+                <li><strong>DFS:</strong> Recursive, simpler code, but cycle detection needs extra coloring</li>
+                <li><strong>Both:</strong> O(V + E) time, O(V) space</li>
+                <li><strong>Use Kahn's when:</strong> You need to detect cycle + topo sort simultaneously, or need level-by-level processing</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function showCode(btn, id) {
+            const container = btn.closest('.code-container');
+            container.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+            container.querySelectorAll('.code-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(id).classList.add('active');
+        }
+    </script>
+</body>
+</html>

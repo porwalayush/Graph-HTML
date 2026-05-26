@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bellman-Ford Algorithm</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh; color: #1a1a1a; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .back-link { color: #000000; text-decoration: none; font-size: 1.1em; display: inline-block; margin-bottom: 20px; }
+        .back-link:hover { text-decoration: underline; }
+        h1 { color: #000000; font-size: 2.2em; margin-bottom: 10px; }
+        h2 { color: #000000; font-size: 1.5em; margin: 30px 0 15px; }
+        p, li { line-height: 1.8; color: #333333; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 15px; }
+        .visual { background: #f5f5f5; border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin: 20px 0; text-align: center; }
+        .visual pre { color: #000000; font-size: 1em; display: inline-block; text-align: left; }
+        .code-container { margin: 20px 0; border-radius: 10px; overflow: hidden; border: 1px solid #ddd; }
+        .code-tabs { display: flex; background: #f0f0f0; }
+        .code-tab { padding: 10px 25px; cursor: pointer; border: none; background: transparent; color: #555555; font-size: 0.95em; border-bottom: 2px solid transparent; }
+        .code-tab.active { color: #000000; border-bottom-color: #000000; background: #f5f5f5; }
+        .code-content { display: none; background: #f5f5f5; padding: 20px; overflow-x: auto; }
+        .code-content.active { display: block; }
+        .code-content pre { color: #1a1a1a; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9em; line-height: 1.6; }
+        .keyword { color: #7b1fa2; }
+        .comment { color: #6a737d; }
+        .number { color: #005cc5; }
+        .string { color: #22863a; }
+        .note { background: #f5f5f5; border-left: 4px solid #000; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">&larr; Back to Graph Topics</a>
+
+        <h1>Bellman-Ford Algorithm</h1>
+        <p>Bellman-Ford finds the <strong>shortest path from a single source</strong> to all other vertices, just like Dijkstra. But unlike Dijkstra, it can handle <strong>negative edge weights</strong> and can <strong>detect negative-weight cycles</strong>.</p>
+
+        <h2>Core Idea: Relaxation</h2>
+        <p>"Relaxation" means: if we find a shorter path to a node, we update its distance. Bellman-Ford simply relaxes ALL edges, and repeats this V-1 times.</p>
+
+        <div class="visual">
+            <pre>
+    What is "relaxing" an edge (u, v, weight)?
+
+    Before:  dist[u] = 3,  dist[v] = 10,  weight = 2
+
+    Check:   dist[u] + weight &lt; dist[v]?
+             3 + 2 = 5 &lt; 10?  YES!
+
+    After:   dist[v] = 5   (updated/relaxed!)
+
+    Intuition: "Can I reach v faster by going through u?"
+            </pre>
+        </div>
+
+        <h2>Why V-1 Iterations?</h2>
+        <p>In a graph with V vertices, the shortest path between any two vertices can have at most V-1 edges (otherwise we'd revisit a vertex, creating a cycle). Each iteration guarantees that paths using one more edge are correctly computed.</p>
+
+        <div class="visual">
+            <pre>
+    Example: Longest shortest path has V-1 = 3 edges
+
+    S ---&gt; A ---&gt; B ---&gt; C
+    (4 vertices, path uses 3 edges)
+
+    Iteration 1: Correct distances for paths with 1 edge
+    Iteration 2: Correct distances for paths with 2 edges
+    Iteration 3: Correct distances for paths with 3 edges
+                  (all shortest paths now finalized)
+            </pre>
+        </div>
+
+        <h2>Visual Walkthrough</h2>
+        <div class="visual">
+            <pre>
+    Graph (directed, with a negative edge):
+
+    (S)---5---&gt;(A)---(-2)---&gt;(B)
+     |                         ^
+     |                         |
+     +----8----&gt;(C)----3------+
+
+    Vertices: S, A, B, C    (V = 4, so V-1 = 3 iterations)
+    Edges: S-&gt;A(5), A-&gt;B(-2), S-&gt;C(8), C-&gt;B(3)
+
+    Initial: dist = [S:0, A:INF, B:INF, C:INF]
+
+    --- Iteration 1 (relax all edges) ---
+    Edge S-&gt;A: dist[S]+5 = 5 &lt; INF   -&gt; dist[A] = 5
+    Edge A-&gt;B: dist[A]+(-2) = 3 &lt; INF -&gt; dist[B] = 3
+    Edge S-&gt;C: dist[S]+8 = 8 &lt; INF   -&gt; dist[C] = 8
+    Edge C-&gt;B: dist[C]+3 = 11 &gt; 3    -&gt; no change
+
+    dist = [S:0, A:5, B:3, C:8]
+
+    --- Iteration 2 (relax all edges again) ---
+    Edge S-&gt;A: 0+5 = 5, not &lt; 5      -&gt; no change
+    Edge A-&gt;B: 5+(-2) = 3, not &lt; 3   -&gt; no change
+    Edge S-&gt;C: 0+8 = 8, not &lt; 8      -&gt; no change
+    Edge C-&gt;B: 8+3 = 11, not &lt; 3     -&gt; no change
+
+    No changes! Algorithm converged early.
+
+    Final: dist = [S:0, A:5, B:3, C:8]
+            </pre>
+        </div>
+
+        <h2>Detecting Negative Cycles</h2>
+        <p>After V-1 iterations, all shortest paths are finalized (if no negative cycle exists). So we do one MORE pass over all edges. If any distance can still be reduced, it means there's a <strong>negative-weight cycle</strong> reachable from the source.</p>
+
+        <div class="visual">
+            <pre>
+    Negative cycle example:
+
+    (A)---(-1)---&gt;(B)
+     ^             |
+     |             |
+     +---(-1)------+
+          and
+    (B)---(-1)---&gt;(A)
+
+    Cycle: A -&gt; B -&gt; A,  total weight = -1 + (-1) = -2
+    Each trip around the cycle reduces distance by 2!
+
+    After V-1 iterations, we can STILL relax edges
+    = negative cycle detected!
+            </pre>
+        </div>
+
+        <h2>Algorithm Steps</h2>
+        <ol>
+            <li>Initialize dist[source] = 0, dist[all others] = INF.</li>
+            <li>Repeat V-1 times: for every edge (u, v, w), if dist[u] + w &lt; dist[v], update dist[v].</li>
+            <li>Do one more pass: if any edge can still be relaxed, a negative cycle exists.</li>
+        </ol>
+
+        <h2>Implementation</h2>
+        <div class="code-container">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode(this, 'bf-java')">Java</button>
+                <button class="code-tab" onclick="showCode(this, 'bf-cpp')">C++</button>
+            </div>
+            <div class="code-content active" id="bf-java">
+                <pre><span class="keyword">import</span> java.util.*;
+
+<span class="keyword">class</span> BellmanFord {
+    <span class="comment">// Edge represented as [from, to, weight]</span>
+    <span class="keyword">static</span> <span class="keyword">int</span>[] bellmanFord(<span class="keyword">int</span> V, <span class="keyword">int</span>[][] edges, <span class="keyword">int</span> src) {
+        <span class="keyword">int</span>[] dist = <span class="keyword">new</span> <span class="keyword">int</span>[V];
+        Arrays.fill(dist, Integer.MAX_VALUE);
+        dist[src] = <span class="number">0</span>;
+
+        <span class="comment">// Step 1: Relax all edges V-1 times</span>
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V - <span class="number">1</span>; i++) {
+            <span class="keyword">boolean</span> updated = <span class="keyword">false</span>;
+            <span class="keyword">for</span> (<span class="keyword">int</span>[] edge : edges) {
+                <span class="keyword">int</span> u = edge[<span class="number">0</span>], v = edge[<span class="number">1</span>], w = edge[<span class="number">2</span>];
+                <span class="keyword">if</span> (dist[u] != Integer.MAX_VALUE &amp;&amp; dist[u] + w &lt; dist[v]) {
+                    dist[v] = dist[u] + w;
+                    updated = <span class="keyword">true</span>;
+                }
+            }
+            <span class="comment">// Early termination: no updates means we're done</span>
+            <span class="keyword">if</span> (!updated) <span class="keyword">break</span>;
+        }
+
+        <span class="comment">// Step 2: Check for negative-weight cycles</span>
+        <span class="keyword">for</span> (<span class="keyword">int</span>[] edge : edges) {
+            <span class="keyword">int</span> u = edge[<span class="number">0</span>], v = edge[<span class="number">1</span>], w = edge[<span class="number">2</span>];
+            <span class="keyword">if</span> (dist[u] != Integer.MAX_VALUE &amp;&amp; dist[u] + w &lt; dist[v]) {
+                System.out.println(<span class="string">"Negative cycle detected!"</span>);
+                <span class="keyword">return null</span>;
+            }
+        }
+
+        <span class="keyword">return</span> dist;
+    }
+
+    <span class="keyword">public static void</span> main(String[] args) {
+        <span class="keyword">int</span> V = <span class="number">4</span>;
+        <span class="keyword">int</span>[][] edges = {
+            {<span class="number">0</span>, <span class="number">1</span>, <span class="number">5</span>},   <span class="comment">// S -> A, weight 5</span>
+            {<span class="number">1</span>, <span class="number">2</span>, -<span class="number">2</span>},  <span class="comment">// A -> B, weight -2</span>
+            {<span class="number">0</span>, <span class="number">3</span>, <span class="number">8</span>},   <span class="comment">// S -> C, weight 8</span>
+            {<span class="number">3</span>, <span class="number">2</span>, <span class="number">3</span>}    <span class="comment">// C -> B, weight 3</span>
+        };
+
+        <span class="keyword">int</span>[] dist = bellmanFord(V, edges, <span class="number">0</span>);
+        <span class="keyword">if</span> (dist != <span class="keyword">null</span>) {
+            System.out.println(Arrays.toString(dist));
+            <span class="comment">// Output: [0, 5, 3, 8]</span>
+        }
+    }
+}</pre>
+            </div>
+            <div class="code-content" id="bf-cpp">
+                <pre><span class="keyword">#include</span> &lt;bits/stdc++.h&gt;
+<span class="keyword">using namespace</span> std;
+
+<span class="keyword">struct</span> Edge {
+    <span class="keyword">int</span> u, v, w;
+};
+
+vector&lt;<span class="keyword">int</span>&gt; bellmanFord(<span class="keyword">int</span> V, vector&lt;Edge&gt;&amp; edges, <span class="keyword">int</span> src) {
+    vector&lt;<span class="keyword">int</span>&gt; dist(V, INT_MAX);
+    dist[src] = <span class="number">0</span>;
+
+    <span class="comment">// Step 1: Relax all edges V-1 times</span>
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V - <span class="number">1</span>; i++) {
+        <span class="keyword">bool</span> updated = <span class="keyword">false</span>;
+        <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; e : edges) {
+            <span class="keyword">if</span> (dist[e.u] != INT_MAX &amp;&amp; dist[e.u] + e.w &lt; dist[e.v]) {
+                dist[e.v] = dist[e.u] + e.w;
+                updated = <span class="keyword">true</span>;
+            }
+        }
+        <span class="comment">// Early termination</span>
+        <span class="keyword">if</span> (!updated) <span class="keyword">break</span>;
+    }
+
+    <span class="comment">// Step 2: Check for negative-weight cycles</span>
+    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; e : edges) {
+        <span class="keyword">if</span> (dist[e.u] != INT_MAX &amp;&amp; dist[e.u] + e.w &lt; dist[e.v]) {
+            cout &lt;&lt; <span class="string">"Negative cycle detected!"</span> &lt;&lt; endl;
+            <span class="keyword">return</span> {};
+        }
+    }
+
+    <span class="keyword">return</span> dist;
+}
+
+<span class="keyword">int</span> main() {
+    <span class="keyword">int</span> V = <span class="number">4</span>;
+    vector&lt;Edge&gt; edges = {
+        {<span class="number">0</span>, <span class="number">1</span>, <span class="number">5</span>},   <span class="comment">// S -> A, weight 5</span>
+        {<span class="number">1</span>, <span class="number">2</span>, -<span class="number">2</span>},  <span class="comment">// A -> B, weight -2</span>
+        {<span class="number">0</span>, <span class="number">3</span>, <span class="number">8</span>},   <span class="comment">// S -> C, weight 8</span>
+        {<span class="number">3</span>, <span class="number">2</span>, <span class="number">3</span>}    <span class="comment">// C -> B, weight 3</span>
+    };
+
+    vector&lt;<span class="keyword">int</span>&gt; dist = bellmanFord(V, edges, <span class="number">0</span>);
+    <span class="keyword">if</span> (!dist.empty()) {
+        <span class="keyword">for</span> (<span class="keyword">int</span> d : dist) cout &lt;&lt; d &lt;&lt; <span class="string">" "</span>;
+        <span class="comment">// Output: 0 5 3 8</span>
+    }
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+            </div>
+        </div>
+
+        <h2>Time and Space Complexity</h2>
+        <ul>
+            <li><strong>Time:</strong> O(V * E) - we iterate V-1 times over all E edges.</li>
+            <li><strong>Space:</strong> O(V) for the distance array (edges stored as input).</li>
+        </ul>
+
+        <h2>Dijkstra vs. Bellman-Ford</h2>
+        <div class="visual">
+            <pre>
+    +--------------------+-----------------+------------------+
+    | Feature            | Dijkstra        | Bellman-Ford     |
+    +--------------------+-----------------+------------------+
+    | Negative weights   | NO              | YES              |
+    | Negative cycle     | Cannot detect   | CAN detect       |
+    | Time complexity    | O((V+E) log V)  | O(V * E)         |
+    | Approach           | Greedy          | Dynamic Prog.    |
+    | Data structure     | Priority Queue  | Edge list        |
+    | Best for           | Sparse, no neg  | Negative weights |
+    +--------------------+-----------------+------------------+
+
+    Rule of thumb:
+    - All weights >= 0?  Use Dijkstra (faster)
+    - Negative weights?  Use Bellman-Ford
+    - Need negative cycle detection?  Use Bellman-Ford
+            </pre>
+        </div>
+
+        <div class="note">
+            <strong>Tip:</strong> Bellman-Ford can be optimized with early termination. If no distance is updated in an entire iteration, the algorithm has converged and you can stop early. This is already included in the code above.
+        </div>
+
+        <h2>Key Takeaways</h2>
+        <ol>
+            <li>Relax all edges V-1 times (handles paths up to V-1 edges long).</li>
+            <li>One extra pass detects negative cycles.</li>
+            <li>Slower than Dijkstra but more versatile (handles negative weights).</li>
+            <li>Uses a simple edge list -- no fancy data structures needed.</li>
+            <li>Common in problems involving currency exchange, arbitrage detection.</li>
+        </ol>
+    </div>
+
+    <script>
+        function showCode(btn, id) {
+            const container = btn.closest('.code-container');
+            container.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+            container.querySelectorAll('.code-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(id).classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BFS - Breadth First Search</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            color: #1a1a1a;
+            padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .back-link { color: #000000; text-decoration: none; font-size: 1.1em; display: inline-block; margin-bottom: 20px; }
+        .back-link:hover { text-decoration: underline; }
+        h1 { color: #000000; font-size: 2.2em; margin-bottom: 10px; }
+        h2 { color: #000000; font-size: 1.5em; margin: 30px 0 15px; }
+        h3 { color: #333333; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; color: #333333; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 15px; }
+        .visual { background: #f5f5f5; border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin: 20px 0; text-align: center; }
+        .visual pre { color: #000000; font-size: 1em; display: inline-block; text-align: left; }
+        .code-container { margin: 20px 0; border-radius: 10px; overflow: hidden; border: 1px solid #ddd; }
+        .code-tabs { display: flex; background: #f0f0f0; }
+        .code-tab { padding: 10px 25px; cursor: pointer; border: none; background: transparent; color: #555555; font-size: 0.95em; border-bottom: 2px solid transparent; }
+        .code-tab.active { color: #000000; border-bottom-color: #000000; background: #f5f5f5; }
+        .code-content { display: none; background: #f5f5f5; padding: 20px; overflow-x: auto; }
+        .code-content.active { display: block; }
+        .code-content pre { color: #1a1a1a; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9em; line-height: 1.6; }
+        .keyword { color: #7b1fa2; }
+        .type { color: #005cc5; }
+        .string { color: #22863a; }
+        .comment { color: #6a737d; }
+        .number { color: #005cc5; }
+        .note { background: #f5f5f5; border-left: 4px solid #000; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
+        .step-box { background: #fafafa; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 10px 0; }
+        .step-box strong { color: #000000; }
+        canvas { border: 1px solid #ddd; border-radius: 10px; margin: 20px auto; display: block; background: #fafafa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Index</a>
+        <h1>BFS (Breadth-First Search)</h1>
+        <p>BFS explores the graph <strong>level by level</strong>. It visits all neighbors of the current node before moving to the next level. Think of it like ripples spreading in water!</p>
+
+        <h2>How BFS Works</h2>
+        <div class="visual">
+<pre>
+   Start at node 0:
+
+   Level 0:    [0]
+                ↓
+   Level 1:    [1] [3]
+                ↓
+   Level 2:    [2] [4]
+
+   Graph:        BFS Order: 0 → 1 → 3 → 2 → 4
+     0
+    / \
+   1   3
+   |   |
+   2   4
+</pre>
+        </div>
+
+        <h2>Algorithm Steps</h2>
+        <ol>
+            <li>Put the starting node in a <strong>queue</strong> and mark it visited</li>
+            <li>While queue is not empty:
+                <ul>
+                    <li>Remove front node from queue</li>
+                    <li>For each unvisited neighbor: mark visited, add to queue</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h2>Visual Walkthrough</h2>
+        <div class="step-box">
+            <strong>Step 1:</strong> Queue = [0], Visited = {0}<br>
+            <strong>Step 2:</strong> Pop 0 → add neighbors 1,3. Queue = [1,3], Visited = {0,1,3}<br>
+            <strong>Step 3:</strong> Pop 1 → add neighbor 2. Queue = [3,2], Visited = {0,1,3,2}<br>
+            <strong>Step 4:</strong> Pop 3 → add neighbor 4. Queue = [2,4], Visited = {0,1,3,2,4}<br>
+            <strong>Step 5:</strong> Pop 2 → no new neighbors. Queue = [4]<br>
+            <strong>Step 6:</strong> Pop 4 → no new neighbors. Queue = [] → DONE!
+        </div>
+
+        <h2>Key Properties</h2>
+        <div class="note">
+            <ul>
+                <li><strong>Time:</strong> O(V + E) — visits every vertex and edge once</li>
+                <li><strong>Space:</strong> O(V) — for the queue and visited array</li>
+                <li><strong>Shortest Path:</strong> BFS gives shortest path in UNWEIGHTED graphs!</li>
+                <li><strong>Data Structure:</strong> Uses a Queue (FIFO)</li>
+            </ul>
+        </div>
+
+        <h2>Code: Basic BFS</h2>
+        <div class="code-container">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode(this, 'java1')">Java</button>
+                <button class="code-tab" onclick="showCode(this, 'cpp1')">C++</button>
+            </div>
+            <div id="java1" class="code-content active">
+<pre>
+<span class="keyword">import</span> java.util.*;
+
+<span class="keyword">public class</span> <span class="type">BFS</span> {
+    <span class="keyword">static void</span> bfs(<span class="keyword">int</span> start, List&lt;List&lt;Integer&gt;&gt; adj, <span class="keyword">int</span> V) {
+        <span class="keyword">boolean</span>[] visited = <span class="keyword">new boolean</span>[V];
+        Queue&lt;Integer&gt; queue = <span class="keyword">new</span> LinkedList&lt;&gt;();
+
+        visited[start] = <span class="keyword">true</span>;
+        queue.add(start);
+
+        <span class="keyword">while</span> (!queue.isEmpty()) {
+            <span class="keyword">int</span> node = queue.poll(); <span class="comment">// remove front</span>
+            System.out.print(node + <span class="string">" "</span>);
+
+            <span class="comment">// Visit all unvisited neighbors</span>
+            <span class="keyword">for</span> (<span class="keyword">int</span> neighbor : adj.get(node)) {
+                <span class="keyword">if</span> (!visited[neighbor]) {
+                    visited[neighbor] = <span class="keyword">true</span>;
+                    queue.add(neighbor);
+                }
+            }
+        }
+    }
+
+    <span class="keyword">public static void</span> main(String[] args) {
+        <span class="keyword">int</span> V = <span class="number">5</span>;
+        List&lt;List&lt;Integer&gt;&gt; adj = <span class="keyword">new</span> ArrayList&lt;&gt;();
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) adj.add(<span class="keyword">new</span> ArrayList&lt;&gt;());
+
+        <span class="comment">// Add edges (undirected)</span>
+        adj.get(<span class="number">0</span>).add(<span class="number">1</span>); adj.get(<span class="number">1</span>).add(<span class="number">0</span>);
+        adj.get(<span class="number">0</span>).add(<span class="number">3</span>); adj.get(<span class="number">3</span>).add(<span class="number">0</span>);
+        adj.get(<span class="number">1</span>).add(<span class="number">2</span>); adj.get(<span class="number">2</span>).add(<span class="number">1</span>);
+        adj.get(<span class="number">3</span>).add(<span class="number">4</span>); adj.get(<span class="number">4</span>).add(<span class="number">3</span>);
+
+        System.out.print(<span class="string">"BFS from 0: "</span>);
+        bfs(<span class="number">0</span>, adj, V); <span class="comment">// Output: 0 1 3 2 4</span>
+    }
+}
+</pre>
+            </div>
+            <div id="cpp1" class="code-content">
+<pre>
+<span class="keyword">#include</span> &lt;bits/stdc++.h&gt;
+<span class="keyword">using namespace</span> std;
+
+<span class="keyword">void</span> bfs(<span class="keyword">int</span> start, vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt;&amp; adj, <span class="keyword">int</span> V) {
+    vector&lt;<span class="keyword">bool</span>&gt; visited(V, <span class="keyword">false</span>);
+    queue&lt;<span class="keyword">int</span>&gt; q;
+
+    visited[start] = <span class="keyword">true</span>;
+    q.push(start);
+
+    <span class="keyword">while</span> (!q.empty()) {
+        <span class="keyword">int</span> node = q.front();
+        q.pop();
+        cout &lt;&lt; node &lt;&lt; <span class="string">" "</span>;
+
+        <span class="comment">// Visit all unvisited neighbors</span>
+        <span class="keyword">for</span> (<span class="keyword">int</span> neighbor : adj[node]) {
+            <span class="keyword">if</span> (!visited[neighbor]) {
+                visited[neighbor] = <span class="keyword">true</span>;
+                q.push(neighbor);
+            }
+        }
+    }
+}
+
+<span class="keyword">int</span> main() {
+    <span class="keyword">int</span> V = <span class="number">5</span>;
+    vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt; adj(V);
+
+    <span class="comment">// Add edges (undirected)</span>
+    adj[<span class="number">0</span>].push_back(<span class="number">1</span>); adj[<span class="number">1</span>].push_back(<span class="number">0</span>);
+    adj[<span class="number">0</span>].push_back(<span class="number">3</span>); adj[<span class="number">3</span>].push_back(<span class="number">0</span>);
+    adj[<span class="number">1</span>].push_back(<span class="number">2</span>); adj[<span class="number">2</span>].push_back(<span class="number">1</span>);
+    adj[<span class="number">3</span>].push_back(<span class="number">4</span>); adj[<span class="number">4</span>].push_back(<span class="number">3</span>);
+
+    cout &lt;&lt; <span class="string">"BFS from 0: "</span>;
+    bfs(<span class="number">0</span>, adj, V); <span class="comment">// Output: 0 1 3 2 4</span>
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+</pre>
+            </div>
+        </div>
+
+        <h2>BFS for Shortest Path (Unweighted)</h2>
+        <div class="code-container">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode(this, 'java2')">Java</button>
+                <button class="code-tab" onclick="showCode(this, 'cpp2')">C++</button>
+            </div>
+            <div id="java2" class="code-content active">
+<pre>
+<span class="comment">// Returns shortest distance from source to all nodes</span>
+<span class="keyword">static int</span>[] bfsShortestPath(<span class="keyword">int</span> src, List&lt;List&lt;Integer&gt;&gt; adj, <span class="keyword">int</span> V) {
+    <span class="keyword">int</span>[] dist = <span class="keyword">new int</span>[V];
+    Arrays.fill(dist, -<span class="number">1</span>); <span class="comment">// -1 means unreachable</span>
+
+    Queue&lt;Integer&gt; queue = <span class="keyword">new</span> LinkedList&lt;&gt;();
+    dist[src] = <span class="number">0</span>;
+    queue.add(src);
+
+    <span class="keyword">while</span> (!queue.isEmpty()) {
+        <span class="keyword">int</span> node = queue.poll();
+        <span class="keyword">for</span> (<span class="keyword">int</span> neighbor : adj.get(node)) {
+            <span class="keyword">if</span> (dist[neighbor] == -<span class="number">1</span>) { <span class="comment">// not visited</span>
+                dist[neighbor] = dist[node] + <span class="number">1</span>;
+                queue.add(neighbor);
+            }
+        }
+    }
+    <span class="keyword">return</span> dist;
+}
+</pre>
+            </div>
+            <div id="cpp2" class="code-content">
+<pre>
+<span class="comment">// Returns shortest distance from source to all nodes</span>
+vector&lt;<span class="keyword">int</span>&gt; bfsShortestPath(<span class="keyword">int</span> src, vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt;&amp; adj, <span class="keyword">int</span> V) {
+    vector&lt;<span class="keyword">int</span>&gt; dist(V, -<span class="number">1</span>); <span class="comment">// -1 means unreachable</span>
+    queue&lt;<span class="keyword">int</span>&gt; q;
+
+    dist[src] = <span class="number">0</span>;
+    q.push(src);
+
+    <span class="keyword">while</span> (!q.empty()) {
+        <span class="keyword">int</span> node = q.front();
+        q.pop();
+        <span class="keyword">for</span> (<span class="keyword">int</span> neighbor : adj[node]) {
+            <span class="keyword">if</span> (dist[neighbor] == -<span class="number">1</span>) { <span class="comment">// not visited</span>
+                dist[neighbor] = dist[node] + <span class="number">1</span>;
+                q.push(neighbor);
+            }
+        }
+    }
+    <span class="keyword">return</span> dist;
+}
+</pre>
+            </div>
+        </div>
+
+        <h2>BFS for Connected Components</h2>
+        <div class="code-container">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode(this, 'java3')">Java</button>
+                <button class="code-tab" onclick="showCode(this, 'cpp3')">C++</button>
+            </div>
+            <div id="java3" class="code-content active">
+<pre>
+<span class="comment">// Count connected components in undirected graph</span>
+<span class="keyword">static int</span> countComponents(List&lt;List&lt;Integer&gt;&gt; adj, <span class="keyword">int</span> V) {
+    <span class="keyword">boolean</span>[] visited = <span class="keyword">new boolean</span>[V];
+    <span class="keyword">int</span> count = <span class="number">0</span>;
+
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) {
+        <span class="keyword">if</span> (!visited[i]) {
+            <span class="comment">// BFS from this unvisited node</span>
+            Queue&lt;Integer&gt; q = <span class="keyword">new</span> LinkedList&lt;&gt;();
+            q.add(i);
+            visited[i] = <span class="keyword">true</span>;
+            <span class="keyword">while</span> (!q.isEmpty()) {
+                <span class="keyword">int</span> node = q.poll();
+                <span class="keyword">for</span> (<span class="keyword">int</span> nb : adj.get(node)) {
+                    <span class="keyword">if</span> (!visited[nb]) {
+                        visited[nb] = <span class="keyword">true</span>;
+                        q.add(nb);
+                    }
+                }
+            }
+            count++; <span class="comment">// found one component</span>
+        }
+    }
+    <span class="keyword">return</span> count;
+}
+</pre>
+            </div>
+            <div id="cpp3" class="code-content">
+<pre>
+<span class="comment">// Count connected components in undirected graph</span>
+<span class="keyword">int</span> countComponents(vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt;&amp; adj, <span class="keyword">int</span> V) {
+    vector&lt;<span class="keyword">bool</span>&gt; visited(V, <span class="keyword">false</span>);
+    <span class="keyword">int</span> count = <span class="number">0</span>;
+
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) {
+        <span class="keyword">if</span> (!visited[i]) {
+            queue&lt;<span class="keyword">int</span>&gt; q;
+            q.push(i);
+            visited[i] = <span class="keyword">true</span>;
+            <span class="keyword">while</span> (!q.empty()) {
+                <span class="keyword">int</span> node = q.front(); q.pop();
+                <span class="keyword">for</span> (<span class="keyword">int</span> nb : adj[node]) {
+                    <span class="keyword">if</span> (!visited[nb]) {
+                        visited[nb] = <span class="keyword">true</span>;
+                        q.push(nb);
+                    }
+                }
+            }
+            count++;
+        }
+    }
+    <span class="keyword">return</span> count;
+}
+</pre>
+            </div>
+        </div>
+
+        <h2>When to Use BFS?</h2>
+        <div class="note">
+            <ul>
+                <li>Shortest path in <strong>unweighted</strong> graph</li>
+                <li>Level-order traversal (find nodes at distance k)</li>
+                <li>Connected components</li>
+                <li>Bipartite check (2-coloring)</li>
+                <li>Multi-source BFS (rotten oranges, 01-matrix)</li>
+                <li>When you need to explore <strong>closest nodes first</strong></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function showCode(btn, id) {
+            const container = btn.closest('.code-container');
+            container.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+            container.querySelectorAll('.code-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(id).classList.add('active');
+        }
+    </script>
+</body>
+</html>

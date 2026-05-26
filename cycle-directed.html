@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cycle Detection - Directed Graph</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh; color: #1a1a1a; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .back-link { color: #000000; text-decoration: none; font-size: 1.1em; display: inline-block; margin-bottom: 20px; }
+        .back-link:hover { text-decoration: underline; }
+        h1 { color: #000000; font-size: 2.2em; margin-bottom: 10px; }
+        h2 { color: #000000; font-size: 1.5em; margin: 30px 0 15px; }
+        p, li { line-height: 1.8; color: #333333; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 15px; }
+        .visual { background: #f5f5f5; border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin: 20px 0; text-align: center; }
+        .visual pre { color: #000000; font-size: 1em; display: inline-block; text-align: left; }
+        .code-container { margin: 20px 0; border-radius: 10px; overflow: hidden; border: 1px solid #ddd; }
+        .code-tabs { display: flex; background: #f0f0f0; }
+        .code-tab { padding: 10px 25px; cursor: pointer; border: none; background: transparent; color: #555555; font-size: 0.95em; border-bottom: 2px solid transparent; }
+        .code-tab.active { color: #000000; border-bottom-color: #000000; background: #f5f5f5; }
+        .code-content { display: none; background: #f5f5f5; padding: 20px; overflow-x: auto; }
+        .code-content.active { display: block; }
+        .code-content pre { color: #1a1a1a; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9em; line-height: 1.6; }
+        .keyword { color: #7b1fa2; }
+        .comment { color: #6a737d; }
+        .number { color: #005cc5; }
+        .string { color: #22863a; }
+        .note { background: #f5f5f5; border-left: 4px solid #000; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Index</a>
+        <h1>Cycle Detection in Directed Graph</h1>
+        <p>In directed graphs, we can't just check parent. We need a smarter approach: <strong>3-color DFS</strong> (White-Gray-Black).</p>
+
+        <h2>Why Parent Check Doesn't Work</h2>
+        <div class="visual">
+<pre>
+  This is NOT a cycle in directed graph:
+    0 → 1
+    ↓   ↓
+    2 → 3     (all arrows go forward, no way to loop back)
+
+  This IS a cycle:
+    0 → 1
+    ↑   ↓
+    3 ← 2     (0→1→2→3→0 forms a cycle)
+</pre>
+        </div>
+
+        <h2>Method: DFS 3-Coloring</h2>
+        <p>Color each node:</p>
+        <ul>
+            <li><strong>WHITE (0):</strong> Not yet visited</li>
+            <li><strong>GRAY (1):</strong> Currently being processed (in the current DFS path)</li>
+            <li><strong>BLACK (2):</strong> Completely processed (all descendants explored)</li>
+        </ul>
+        <p><strong>Rule: If we encounter a GRAY node → CYCLE!</strong> (Because gray means it's an ancestor in current path)</p>
+
+        <div class="visual">
+<pre>
+  Graph: 0→1→2→3→1 (cycle: 1→2→3→1)
+
+  DFS from 0:
+  Color 0 = GRAY
+    Color 1 = GRAY
+      Color 2 = GRAY
+        Color 3 = GRAY
+          Neighbor 1 is GRAY → CYCLE FOUND!
+
+  Gray node = "I'm still exploring this path"
+  If I meet a gray node again = I came back to where I started = CYCLE
+</pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode(this, 'java1')">Java</button>
+                <button class="code-tab" onclick="showCode(this, 'cpp1')">C++</button>
+            </div>
+            <div id="java1" class="code-content active">
+<pre>
+<span class="keyword">import</span> java.util.*;
+
+<span class="keyword">public class</span> CycleDirected {
+    <span class="keyword">static final int</span> WHITE = <span class="number">0</span>, GRAY = <span class="number">1</span>, BLACK = <span class="number">2</span>;
+
+    <span class="keyword">static boolean</span> hasCycleDFS(<span class="keyword">int</span> node, List&lt;List&lt;Integer&gt;&gt; adj, <span class="keyword">int</span>[] color) {
+        color[node] = GRAY; <span class="comment">// mark as "in progress"</span>
+
+        <span class="keyword">for</span> (<span class="keyword">int</span> neighbor : adj.get(node)) {
+            <span class="keyword">if</span> (color[neighbor] == GRAY) {
+                <span class="keyword">return true</span>; <span class="comment">// found a back edge → CYCLE!</span>
+            }
+            <span class="keyword">if</span> (color[neighbor] == WHITE) {
+                <span class="keyword">if</span> (hasCycleDFS(neighbor, adj, color))
+                    <span class="keyword">return true</span>;
+            }
+            <span class="comment">// BLACK nodes are already fully processed, skip them</span>
+        }
+
+        color[node] = BLACK; <span class="comment">// done with this node</span>
+        <span class="keyword">return false</span>;
+    }
+
+    <span class="keyword">static boolean</span> hasCycle(List&lt;List&lt;Integer&gt;&gt; adj, <span class="keyword">int</span> V) {
+        <span class="keyword">int</span>[] color = <span class="keyword">new int</span>[V]; <span class="comment">// all WHITE initially</span>
+
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) {
+            <span class="keyword">if</span> (color[i] == WHITE) {
+                <span class="keyword">if</span> (hasCycleDFS(i, adj, color))
+                    <span class="keyword">return true</span>;
+            }
+        }
+        <span class="keyword">return false</span>;
+    }
+
+    <span class="keyword">public static void</span> main(String[] args) {
+        <span class="keyword">int</span> V = <span class="number">4</span>;
+        List&lt;List&lt;Integer&gt;&gt; adj = <span class="keyword">new</span> ArrayList&lt;&gt;();
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) adj.add(<span class="keyword">new</span> ArrayList&lt;&gt;());
+
+        <span class="comment">// 0→1→2→3→1 (directed cycle)</span>
+        adj.get(<span class="number">0</span>).add(<span class="number">1</span>);
+        adj.get(<span class="number">1</span>).add(<span class="number">2</span>);
+        adj.get(<span class="number">2</span>).add(<span class="number">3</span>);
+        adj.get(<span class="number">3</span>).add(<span class="number">1</span>); <span class="comment">// back edge creating cycle</span>
+
+        System.out.println(<span class="string">"Has cycle: "</span> + hasCycle(adj, V)); <span class="comment">// true</span>
+    }
+}
+</pre>
+            </div>
+            <div id="cpp1" class="code-content">
+<pre>
+<span class="keyword">#include</span> &lt;bits/stdc++.h&gt;
+<span class="keyword">using namespace</span> std;
+
+<span class="keyword">const int</span> WHITE = <span class="number">0</span>, GRAY = <span class="number">1</span>, BLACK = <span class="number">2</span>;
+
+<span class="keyword">bool</span> hasCycleDFS(<span class="keyword">int</span> node, vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt;&amp; adj, vector&lt;<span class="keyword">int</span>&gt;&amp; color) {
+    color[node] = GRAY;
+
+    <span class="keyword">for</span> (<span class="keyword">int</span> neighbor : adj[node]) {
+        <span class="keyword">if</span> (color[neighbor] == GRAY) <span class="keyword">return true</span>; <span class="comment">// cycle!</span>
+        <span class="keyword">if</span> (color[neighbor] == WHITE) {
+            <span class="keyword">if</span> (hasCycleDFS(neighbor, adj, color))
+                <span class="keyword">return true</span>;
+        }
+    }
+
+    color[node] = BLACK;
+    <span class="keyword">return false</span>;
+}
+
+<span class="keyword">bool</span> hasCycle(vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt;&amp; adj, <span class="keyword">int</span> V) {
+    vector&lt;<span class="keyword">int</span>&gt; color(V, WHITE);
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) {
+        <span class="keyword">if</span> (color[i] == WHITE &amp;&amp; hasCycleDFS(i, adj, color))
+            <span class="keyword">return true</span>;
+    }
+    <span class="keyword">return false</span>;
+}
+</pre>
+            </div>
+        </div>
+
+        <h2>Alternative: Using Kahn's Algorithm (BFS)</h2>
+        <p>If topological sort doesn't include all nodes → there's a cycle!</p>
+
+        <div class="code-container">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode(this, 'java2')">Java</button>
+                <button class="code-tab" onclick="showCode(this, 'cpp2')">C++</button>
+            </div>
+            <div id="java2" class="code-content active">
+<pre>
+<span class="keyword">static boolean</span> hasCycleKahn(List&lt;List&lt;Integer&gt;&gt; adj, <span class="keyword">int</span> V) {
+    <span class="keyword">int</span>[] indegree = <span class="keyword">new int</span>[V];
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++)
+        <span class="keyword">for</span> (<span class="keyword">int</span> nb : adj.get(i))
+            indegree[nb]++;
+
+    Queue&lt;Integer&gt; q = <span class="keyword">new</span> LinkedList&lt;&gt;();
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++)
+        <span class="keyword">if</span> (indegree[i] == <span class="number">0</span>) q.add(i);
+
+    <span class="keyword">int</span> count = <span class="number">0</span>; <span class="comment">// nodes processed</span>
+    <span class="keyword">while</span> (!q.isEmpty()) {
+        <span class="keyword">int</span> node = q.poll();
+        count++;
+        <span class="keyword">for</span> (<span class="keyword">int</span> nb : adj.get(node)) {
+            indegree[nb]--;
+            <span class="keyword">if</span> (indegree[nb] == <span class="number">0</span>) q.add(nb);
+        }
+    }
+
+    <span class="comment">// If not all nodes processed → cycle exists!</span>
+    <span class="keyword">return</span> count != V;
+}
+</pre>
+            </div>
+            <div id="cpp2" class="code-content">
+<pre>
+<span class="keyword">bool</span> hasCycleKahn(vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt;&amp; adj, <span class="keyword">int</span> V) {
+    vector&lt;<span class="keyword">int</span>&gt; indegree(V, <span class="number">0</span>);
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++)
+        <span class="keyword">for</span> (<span class="keyword">int</span> nb : adj[i])
+            indegree[nb]++;
+
+    queue&lt;<span class="keyword">int</span>&gt; q;
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++)
+        <span class="keyword">if</span> (indegree[i] == <span class="number">0</span>) q.push(i);
+
+    <span class="keyword">int</span> count = <span class="number">0</span>;
+    <span class="keyword">while</span> (!q.empty()) {
+        <span class="keyword">int</span> node = q.front(); q.pop();
+        count++;
+        <span class="keyword">for</span> (<span class="keyword">int</span> nb : adj[node]) {
+            <span class="keyword">if</span> (--indegree[nb] == <span class="number">0</span>) q.push(nb);
+        }
+    }
+    <span class="keyword">return</span> count != V; <span class="comment">// cycle if not all processed</span>
+}
+</pre>
+            </div>
+        </div>
+
+        <h2>Summary</h2>
+        <div class="note">
+            <ul>
+                <li><strong>DFS 3-Coloring:</strong> Most intuitive. Gray = currently in path, finding gray = back edge = cycle</li>
+                <li><strong>Kahn's BFS:</strong> If topo sort fails (count < V) → cycle exists</li>
+                <li><strong>Key difference from undirected:</strong> Can't use parent check! Must use coloring.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function showCode(btn, id) {
+            const container = btn.closest('.code-container');
+            container.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+            container.querySelectorAll('.code-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(id).classList.add('active');
+        }
+    </script>
+</body>
+</html>

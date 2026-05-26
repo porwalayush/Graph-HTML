@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Representation - Basics</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            color: #1a1a1a;
+            padding: 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .back-link {
+            color: #000000;
+            text-decoration: none;
+            font-size: 1.1em;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .back-link:hover { text-decoration: underline; }
+        h1 { color: #000000; font-size: 2.2em; margin-bottom: 10px; }
+        h2 { color: #000000; font-size: 1.5em; margin: 30px 0 15px; }
+        h3 { color: #333333; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; color: #333333; margin-bottom: 10px; }
+        ul { padding-left: 20px; margin-bottom: 15px; }
+        .visual {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .visual pre {
+            color: #000000;
+            font-size: 1.1em;
+            display: inline-block;
+            text-align: left;
+        }
+        .code-container {
+            margin: 20px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+        .code-tabs {
+            display: flex;
+            background: #f0f0f0;
+        }
+        .code-tab {
+            padding: 10px 25px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #555555;
+            font-size: 0.95em;
+            border-bottom: 2px solid transparent;
+        }
+        .code-tab.active {
+            color: #000000;
+            border-bottom-color: #000000;
+            background: #f5f5f5;
+        }
+        .code-content {
+            display: none;
+            background: #f5f5f5;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        .code-content.active { display: block; }
+        .code-content pre {
+            color: #1a1a1a;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+        .keyword { color: #7b1fa2; }
+        .type { color: #005cc5; }
+        .string { color: #22863a; }
+        .comment { color: #6a737d; }
+        .number { color: #005cc5; }
+        .note {
+            background: #f5f5f5;
+            border-left: 4px solid #000;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        .comparison-table th {
+            background: #f0f0f0;
+            color: #000000;
+        }
+        .comparison-table tr:hover {
+            background: #fafafa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Index</a>
+        <h1>Graph Representation</h1>
+        <p>A graph is a collection of <strong>vertices (nodes)</strong> connected by <strong>edges (links)</strong>.</p>
+
+        <h2>Types of Graphs</h2>
+        <div class="visual">
+<pre>
+  UNDIRECTED GRAPH          DIRECTED GRAPH            WEIGHTED GRAPH
+
+    1 --- 2                   1 → 2                   1 --5-- 2
+    |     |                   ↓   ↓                   |       |
+    |     |                   ↓   ↓                   3       7
+    4 --- 3                   4 → 3                   |       |
+                                                      4 --2-- 3
+</pre>
+        </div>
+
+        <ul>
+            <li><strong>Undirected:</strong> Edges have no direction. If A connects to B, B also connects to A.</li>
+            <li><strong>Directed:</strong> Edges have direction. A→B doesn't mean B→A.</li>
+            <li><strong>Weighted:</strong> Each edge has a cost/weight associated with it.</li>
+        </ul>
+
+        <h2>1. Adjacency Matrix</h2>
+        <p>A 2D array where <code>matrix[i][j] = 1</code> means there's an edge from node i to node j.</p>
+
+        <div class="visual">
+<pre>
+  Graph:              Adjacency Matrix:
+  0 --- 1              0  1  2  3
+  |     |          0 [ 0  1  0  1 ]
+  |     |          1 [ 1  0  1  0 ]
+  3 --- 2          2 [ 0  1  0  1 ]
+                   3 [ 1  0  1  0 ]
+</pre>
+        </div>
+
+        <div class="note">
+            <strong>When to use:</strong> Dense graphs (many edges), need O(1) edge lookup.<br>
+            <strong>Space:</strong> O(V²) — wasteful for sparse graphs.
+        </div>
+
+        <h2>2. Adjacency List</h2>
+        <p>Each node stores a list of its neighbors. Most commonly used representation.</p>
+
+        <div class="visual">
+<pre>
+  Graph:              Adjacency List:
+  0 --- 1            0 → [1, 3]
+  |     |            1 → [0, 2]
+  |     |            2 → [1, 3]
+  3 --- 2            3 → [0, 2]
+</pre>
+        </div>
+
+        <div class="note">
+            <strong>When to use:</strong> Sparse graphs (few edges), most competitive programming problems.<br>
+            <strong>Space:</strong> O(V + E) — efficient!
+        </div>
+
+        <h2>Comparison</h2>
+        <table class="comparison-table">
+            <tr>
+                <th>Operation</th>
+                <th>Adjacency Matrix</th>
+                <th>Adjacency List</th>
+            </tr>
+            <tr>
+                <td>Check if edge exists</td>
+                <td>O(1)</td>
+                <td>O(degree)</td>
+            </tr>
+            <tr>
+                <td>Find all neighbors</td>
+                <td>O(V)</td>
+                <td>O(degree)</td>
+            </tr>
+            <tr>
+                <td>Space</td>
+                <td>O(V²)</td>
+                <td>O(V + E)</td>
+            </tr>
+            <tr>
+                <td>Add edge</td>
+                <td>O(1)</td>
+                <td>O(1)</td>
+            </tr>
+        </table>
+
+        <h2>Code: Building a Graph (Adjacency List)</h2>
+        <div class="code-container">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode(this, 'java1')">Java</button>
+                <button class="code-tab" onclick="showCode(this, 'cpp1')">C++</button>
+            </div>
+            <div id="java1" class="code-content active">
+<pre>
+<span class="keyword">import</span> java.util.*;
+
+<span class="keyword">public class</span> <span class="type">Graph</span> {
+    <span class="comment">// Number of vertices</span>
+    <span class="keyword">int</span> V;
+    <span class="comment">// Adjacency list: each index has a list of neighbors</span>
+    List&lt;List&lt;Integer&gt;&gt; adj;
+
+    <span class="type">Graph</span>(<span class="keyword">int</span> V) {
+        <span class="keyword">this</span>.V = V;
+        adj = <span class="keyword">new</span> ArrayList&lt;&gt;();
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) {
+            adj.add(<span class="keyword">new</span> ArrayList&lt;&gt;());
+        }
+    }
+
+    <span class="comment">// Add edge for UNDIRECTED graph</span>
+    <span class="keyword">void</span> addEdge(<span class="keyword">int</span> u, <span class="keyword">int</span> v) {
+        adj.get(u).add(v);
+        adj.get(v).add(u); <span class="comment">// Remove this line for directed graph</span>
+    }
+
+    <span class="keyword">public static void</span> main(String[] args) {
+        Graph g = <span class="keyword">new</span> Graph(<span class="number">5</span>);
+        g.addEdge(<span class="number">0</span>, <span class="number">1</span>);
+        g.addEdge(<span class="number">0</span>, <span class="number">4</span>);
+        g.addEdge(<span class="number">1</span>, <span class="number">2</span>);
+        g.addEdge(<span class="number">1</span>, <span class="number">3</span>);
+        g.addEdge(<span class="number">3</span>, <span class="number">4</span>);
+
+        <span class="comment">// Print adjacency list</span>
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; g.V; i++) {
+            System.out.println(i + <span class="string">" → "</span> + g.adj.get(i));
+        }
+    }
+}
+</pre>
+            </div>
+            <div id="cpp1" class="code-content">
+<pre>
+<span class="keyword">#include</span> &lt;bits/stdc++.h&gt;
+<span class="keyword">using namespace</span> std;
+
+<span class="keyword">int</span> main() {
+    <span class="keyword">int</span> V = <span class="number">5</span>;
+    <span class="comment">// Adjacency list using vector of vectors</span>
+    vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt; adj(V);
+
+    <span class="comment">// Add edge for UNDIRECTED graph</span>
+    <span class="keyword">auto</span> addEdge = [&](<span class="keyword">int</span> u, <span class="keyword">int</span> v) {
+        adj[u].push_back(v);
+        adj[v].push_back(u); <span class="comment">// Remove for directed</span>
+    };
+
+    addEdge(<span class="number">0</span>, <span class="number">1</span>);
+    addEdge(<span class="number">0</span>, <span class="number">4</span>);
+    addEdge(<span class="number">1</span>, <span class="number">2</span>);
+    addEdge(<span class="number">1</span>, <span class="number">3</span>);
+    addEdge(<span class="number">3</span>, <span class="number">4</span>);
+
+    <span class="comment">// Print adjacency list</span>
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) {
+        cout &lt;&lt; i &lt;&lt; <span class="string">" → "</span>;
+        <span class="keyword">for</span> (<span class="keyword">int</span> x : adj[i]) cout &lt;&lt; x &lt;&lt; <span class="string">" "</span>;
+        cout &lt;&lt; endl;
+    }
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+</pre>
+            </div>
+        </div>
+
+        <h2>Code: Weighted Graph (Adjacency List)</h2>
+        <div class="code-container">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode(this, 'java2')">Java</button>
+                <button class="code-tab" onclick="showCode(this, 'cpp2')">C++</button>
+            </div>
+            <div id="java2" class="code-content active">
+<pre>
+<span class="keyword">import</span> java.util.*;
+
+<span class="keyword">public class</span> <span class="type">WeightedGraph</span> {
+    <span class="keyword">int</span> V;
+    <span class="comment">// Each neighbor stored as {node, weight}</span>
+    List&lt;List&lt;<span class="keyword">int</span>[]&gt;&gt; adj;
+
+    <span class="type">WeightedGraph</span>(<span class="keyword">int</span> V) {
+        <span class="keyword">this</span>.V = V;
+        adj = <span class="keyword">new</span> ArrayList&lt;&gt;();
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++)
+            adj.add(<span class="keyword">new</span> ArrayList&lt;&gt;());
+    }
+
+    <span class="keyword">void</span> addEdge(<span class="keyword">int</span> u, <span class="keyword">int</span> v, <span class="keyword">int</span> weight) {
+        adj.get(u).add(<span class="keyword">new int</span>[]{v, weight});
+        adj.get(v).add(<span class="keyword">new int</span>[]{u, weight}); <span class="comment">// undirected</span>
+    }
+}
+</pre>
+            </div>
+            <div id="cpp2" class="code-content">
+<pre>
+<span class="keyword">#include</span> &lt;bits/stdc++.h&gt;
+<span class="keyword">using namespace</span> std;
+
+<span class="keyword">int</span> main() {
+    <span class="keyword">int</span> V = <span class="number">5</span>;
+    <span class="comment">// {neighbor, weight}</span>
+    vector&lt;vector&lt;pair&lt;<span class="keyword">int</span>,<span class="keyword">int</span>&gt;&gt;&gt; adj(V);
+
+    <span class="keyword">auto</span> addEdge = [&](<span class="keyword">int</span> u, <span class="keyword">int</span> v, <span class="keyword">int</span> w) {
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w}); <span class="comment">// undirected</span>
+    };
+
+    addEdge(<span class="number">0</span>, <span class="number">1</span>, <span class="number">5</span>);
+    addEdge(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);
+    addEdge(<span class="number">0</span>, <span class="number">3</span>, <span class="number">7</span>);
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+</pre>
+            </div>
+        </div>
+
+        <h2>Edge List Representation</h2>
+        <p>Simply store all edges as a list of tuples: <code>(u, v, weight)</code>. Used in Kruskal's algorithm.</p>
+        <div class="code-container">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode(this, 'java3')">Java</button>
+                <button class="code-tab" onclick="showCode(this, 'cpp3')">C++</button>
+            </div>
+            <div id="java3" class="code-content active">
+<pre>
+<span class="comment">// Edge list: array of {u, v, weight}</span>
+<span class="keyword">int</span>[][] edges = {
+    {<span class="number">0</span>, <span class="number">1</span>, <span class="number">5</span>},
+    {<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>},
+    {<span class="number">0</span>, <span class="number">3</span>, <span class="number">7</span>},
+    {<span class="number">2</span>, <span class="number">3</span>, <span class="number">2</span>}
+};
+
+<span class="comment">// Sort by weight (useful for Kruskal's)</span>
+Arrays.sort(edges, (a, b) -&gt; a[<span class="number">2</span>] - b[<span class="number">2</span>]);
+</pre>
+            </div>
+            <div id="cpp3" class="code-content">
+<pre>
+<span class="comment">// Edge list: vector of {weight, u, v}</span>
+vector&lt;tuple&lt;<span class="keyword">int</span>,<span class="keyword">int</span>,<span class="keyword">int</span>&gt;&gt; edges = {
+    {<span class="number">5</span>, <span class="number">0</span>, <span class="number">1</span>},
+    {<span class="number">3</span>, <span class="number">1</span>, <span class="number">2</span>},
+    {<span class="number">7</span>, <span class="number">0</span>, <span class="number">3</span>},
+    {<span class="number">2</span>, <span class="number">2</span>, <span class="number">3</span>}
+};
+
+<span class="comment">// Sort by weight (useful for Kruskal's)</span>
+sort(edges.begin(), edges.end());
+</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showCode(btn, id) {
+            const container = btn.closest('.code-container');
+            container.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+            container.querySelectorAll('.code-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(id).classList.add('active');
+        }
+    </script>
+</body>
+</html>

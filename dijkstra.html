@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dijkstra's Algorithm</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh; color: #1a1a1a; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .back-link { color: #000000; text-decoration: none; font-size: 1.1em; display: inline-block; margin-bottom: 20px; }
+        .back-link:hover { text-decoration: underline; }
+        h1 { color: #000000; font-size: 2.2em; margin-bottom: 10px; }
+        h2 { color: #000000; font-size: 1.5em; margin: 30px 0 15px; }
+        p, li { line-height: 1.8; color: #333333; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 15px; }
+        .visual { background: #f5f5f5; border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin: 20px 0; text-align: center; }
+        .visual pre { color: #000000; font-size: 1em; display: inline-block; text-align: left; }
+        .code-container { margin: 20px 0; border-radius: 10px; overflow: hidden; border: 1px solid #ddd; }
+        .code-tabs { display: flex; background: #f0f0f0; }
+        .code-tab { padding: 10px 25px; cursor: pointer; border: none; background: transparent; color: #555555; font-size: 0.95em; border-bottom: 2px solid transparent; }
+        .code-tab.active { color: #000000; border-bottom-color: #000000; background: #f5f5f5; }
+        .code-content { display: none; background: #f5f5f5; padding: 20px; overflow-x: auto; }
+        .code-content.active { display: block; }
+        .code-content pre { color: #1a1a1a; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9em; line-height: 1.6; }
+        .keyword { color: #7b1fa2; }
+        .comment { color: #6a737d; }
+        .number { color: #005cc5; }
+        .string { color: #22863a; }
+        .note { background: #f5f5f5; border-left: 4px solid #000; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">&larr; Back to Graph Topics</a>
+
+        <h1>Dijkstra's Algorithm</h1>
+        <p>Dijkstra's algorithm finds the <strong>shortest path from a single source vertex</strong> to all other vertices in a weighted graph. It works only when all edge weights are <strong>non-negative</strong>.</p>
+
+        <h2>How It Works (Intuition)</h2>
+        <p>Think of it like spreading water from a source. Water always flows to the nearest unvisited node first. Once a node is "flooded," its shortest distance is finalized.</p>
+        <ol>
+            <li>Start at the source node with distance 0. All other nodes start at infinity.</li>
+            <li>Pick the unvisited node with the smallest known distance (use a min-heap).</li>
+            <li>For each neighbor of that node, check if going through the current node gives a shorter path. If yes, update the neighbor's distance.</li>
+            <li>Mark the current node as visited (finalized).</li>
+            <li>Repeat until all nodes are visited or the heap is empty.</li>
+        </ol>
+
+        <h2>Visual Walkthrough</h2>
+        <div class="visual">
+            <pre>
+    Graph with weights:
+
+         (A)---4---(B)
+         / |         |  \
+       1   |         2    7
+       /   |         |      \
+     (S)   2       (D)---1---(E)
+       \   |       /
+       3   |     3
+        \  |   /
+         (C)--
+
+    Source = S
+
+    Step 1: dist[S]=0, all others = INF
+            Pick S (dist=0)
+            Update: A=1, C=3
+
+    Step 2: Pick A (dist=1)
+            Update: B=1+4=5, C=min(3, 1+2)=3
+
+    Step 3: Pick C (dist=3)
+            Update: D=3+3=6
+
+    Step 4: Pick B (dist=5)
+            Update: D=min(6, 5+2)=6, E=5+7=12
+
+    Step 5: Pick D (dist=6)
+            Update: E=min(12, 6+1)=7
+
+    Step 6: Pick E (dist=7)
+            Done!
+
+    Final distances from S:
+    S=0, A=1, C=3, B=5, D=6, E=7
+            </pre>
+        </div>
+
+        <h2>Priority Queue Approach</h2>
+        <p>We use a <strong>min-heap (priority queue)</strong> to always extract the node with the smallest tentative distance. This avoids scanning all nodes each time, making the algorithm efficient.</p>
+
+        <div class="visual">
+            <pre>
+    Min-Heap operations during algorithm:
+
+    Initial:   [(S, 0)]
+
+    Pop S:     [(A, 1), (C, 3)]
+
+    Pop A:     [(C, 3), (B, 5)]
+
+    Pop C:     [(B, 5), (D, 6)]
+
+    Pop B:     [(D, 6), (E, 12)]
+
+    Pop D:     [(E, 7)]       &lt;-- E updated from 12 to 7
+
+    Pop E:     []             &lt;-- Done!
+            </pre>
+        </div>
+
+        <h2>Implementation</h2>
+        <div class="code-container">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode(this, 'dijkstra-java')">Java</button>
+                <button class="code-tab" onclick="showCode(this, 'dijkstra-cpp')">C++</button>
+            </div>
+            <div class="code-content active" id="dijkstra-java">
+                <pre><span class="keyword">import</span> java.util.*;
+
+<span class="keyword">class</span> Dijkstra {
+    <span class="comment">// Adjacency list: node -> list of (neighbor, weight)</span>
+    <span class="keyword">static</span> <span class="keyword">int</span>[] dijkstra(<span class="keyword">int</span> V, List&lt;List&lt;<span class="keyword">int</span>[]&gt;&gt; adj, <span class="keyword">int</span> src) {
+        <span class="comment">// dist[i] = shortest distance from src to i</span>
+        <span class="keyword">int</span>[] dist = <span class="keyword">new</span> <span class="keyword">int</span>[V];
+        Arrays.fill(dist, Integer.MAX_VALUE);
+        dist[src] = <span class="number">0</span>;
+
+        <span class="comment">// Min-heap: (distance, node)</span>
+        PriorityQueue&lt;<span class="keyword">int</span>[]&gt; pq = <span class="keyword">new</span> PriorityQueue&lt;&gt;((a, b) -&gt; a[<span class="number">0</span>] - b[<span class="number">0</span>]);
+        pq.offer(<span class="keyword">new</span> <span class="keyword">int</span>[]{<span class="number">0</span>, src});
+
+        <span class="keyword">while</span> (!pq.isEmpty()) {
+            <span class="keyword">int</span>[] curr = pq.poll();
+            <span class="keyword">int</span> d = curr[<span class="number">0</span>], u = curr[<span class="number">1</span>];
+
+            <span class="comment">// Skip if we already found a better path</span>
+            <span class="keyword">if</span> (d &gt; dist[u]) <span class="keyword">continue</span>;
+
+            <span class="comment">// Relax all neighbors</span>
+            <span class="keyword">for</span> (<span class="keyword">int</span>[] edge : adj.get(u)) {
+                <span class="keyword">int</span> v = edge[<span class="number">0</span>], w = edge[<span class="number">1</span>];
+                <span class="keyword">if</span> (dist[u] + w &lt; dist[v]) {
+                    dist[v] = dist[u] + w;
+                    pq.offer(<span class="keyword">new</span> <span class="keyword">int</span>[]{dist[v], v});
+                }
+            }
+        }
+        <span class="keyword">return</span> dist;
+    }
+
+    <span class="keyword">public static void</span> main(String[] args) {
+        <span class="keyword">int</span> V = <span class="number">5</span>;
+        List&lt;List&lt;<span class="keyword">int</span>[]&gt;&gt; adj = <span class="keyword">new</span> ArrayList&lt;&gt;();
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) adj.add(<span class="keyword">new</span> ArrayList&lt;&gt;());
+
+        <span class="comment">// Add edges: (from, to, weight)</span>
+        adj.get(<span class="number">0</span>).add(<span class="keyword">new</span> <span class="keyword">int</span>[]{<span class="number">1</span>, <span class="number">4</span>});  <span class="comment">// S -> A, weight 4</span>
+        adj.get(<span class="number">0</span>).add(<span class="keyword">new</span> <span class="keyword">int</span>[]{<span class="number">2</span>, <span class="number">1</span>});  <span class="comment">// S -> B, weight 1</span>
+        adj.get(<span class="number">2</span>).add(<span class="keyword">new</span> <span class="keyword">int</span>[]{<span class="number">3</span>, <span class="number">2</span>});  <span class="comment">// B -> C, weight 2</span>
+        adj.get(<span class="number">3</span>).add(<span class="keyword">new</span> <span class="keyword">int</span>[]{<span class="number">4</span>, <span class="number">3</span>});  <span class="comment">// C -> D, weight 3</span>
+        adj.get(<span class="number">1</span>).add(<span class="keyword">new</span> <span class="keyword">int</span>[]{<span class="number">4</span>, <span class="number">6</span>});  <span class="comment">// A -> D, weight 6</span>
+
+        <span class="keyword">int</span>[] dist = dijkstra(V, adj, <span class="number">0</span>);
+        System.out.println(Arrays.toString(dist));
+        <span class="comment">// Output: [0, 4, 1, 3, 6]</span>
+    }
+}</pre>
+            </div>
+            <div class="code-content" id="dijkstra-cpp">
+                <pre><span class="keyword">#include</span> &lt;bits/stdc++.h&gt;
+<span class="keyword">using namespace</span> std;
+
+vector&lt;<span class="keyword">int</span>&gt; dijkstra(<span class="keyword">int</span> V, vector&lt;vector&lt;pair&lt;<span class="keyword">int</span>,<span class="keyword">int</span>&gt;&gt;&gt;&amp; adj, <span class="keyword">int</span> src) {
+    <span class="comment">// dist[i] = shortest distance from src to i</span>
+    vector&lt;<span class="keyword">int</span>&gt; dist(V, INT_MAX);
+    dist[src] = <span class="number">0</span>;
+
+    <span class="comment">// Min-heap: (distance, node)</span>
+    priority_queue&lt;pair&lt;<span class="keyword">int</span>,<span class="keyword">int</span>&gt;, vector&lt;pair&lt;<span class="keyword">int</span>,<span class="keyword">int</span>&gt;&gt;, greater&lt;pair&lt;<span class="keyword">int</span>,<span class="keyword">int</span>&gt;&gt;&gt; pq;
+    pq.push({<span class="number">0</span>, src});
+
+    <span class="keyword">while</span> (!pq.empty()) {
+        <span class="keyword">auto</span> [d, u] = pq.top();
+        pq.pop();
+
+        <span class="comment">// Skip if we already found a better path</span>
+        <span class="keyword">if</span> (d &gt; dist[u]) <span class="keyword">continue</span>;
+
+        <span class="comment">// Relax all neighbors</span>
+        <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; [v, w] : adj[u]) {
+            <span class="keyword">if</span> (dist[u] + w &lt; dist[v]) {
+                dist[v] = dist[u] + w;
+                pq.push({dist[v], v});
+            }
+        }
+    }
+    <span class="keyword">return</span> dist;
+}
+
+<span class="keyword">int</span> main() {
+    <span class="keyword">int</span> V = <span class="number">5</span>;
+    vector&lt;vector&lt;pair&lt;<span class="keyword">int</span>,<span class="keyword">int</span>&gt;&gt;&gt; adj(V);
+
+    <span class="comment">// Add edges: {neighbor, weight}</span>
+    adj[<span class="number">0</span>].push_back({<span class="number">1</span>, <span class="number">4</span>});  <span class="comment">// S -> A, weight 4</span>
+    adj[<span class="number">0</span>].push_back({<span class="number">2</span>, <span class="number">1</span>});  <span class="comment">// S -> B, weight 1</span>
+    adj[<span class="number">2</span>].push_back({<span class="number">3</span>, <span class="number">2</span>});  <span class="comment">// B -> C, weight 2</span>
+    adj[<span class="number">3</span>].push_back({<span class="number">4</span>, <span class="number">3</span>});  <span class="comment">// C -> D, weight 3</span>
+    adj[<span class="number">1</span>].push_back({<span class="number">4</span>, <span class="number">6</span>});  <span class="comment">// A -> D, weight 6</span>
+
+    vector&lt;<span class="keyword">int</span>&gt; dist = dijkstra(V, adj, <span class="number">0</span>);
+    <span class="keyword">for</span> (<span class="keyword">int</span> d : dist) cout &lt;&lt; d &lt;&lt; <span class="string">" "</span>;
+    <span class="comment">// Output: 0 4 1 3 6</span>
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</pre>
+            </div>
+        </div>
+
+        <h2>Time and Space Complexity</h2>
+        <ul>
+            <li><strong>Time:</strong> O((V + E) log V) with a binary heap. Each vertex is extracted once (V log V) and each edge triggers at most one decrease-key / insert (E log V).</li>
+            <li><strong>Space:</strong> O(V + E) for the adjacency list and distance array.</li>
+        </ul>
+
+        <div class="note">
+            <strong>Important:</strong> Dijkstra's algorithm does NOT work with negative edge weights. If an edge has weight -3, Dijkstra might finalize a node's distance too early, missing a shorter path through the negative edge. Use <a href="bellman-ford.html" style="color:#000;">Bellman-Ford</a> for graphs with negative weights.
+        </div>
+
+        <h2>When to Use Dijkstra</h2>
+        <ul>
+            <li>Finding shortest paths in road networks, maps (all distances are positive).</li>
+            <li>Network routing protocols (OSPF uses Dijkstra).</li>
+            <li>Any graph where all edge weights are non-negative.</li>
+            <li>When you need single-source shortest path efficiently.</li>
+        </ul>
+
+        <h2>Key Takeaways</h2>
+        <ol>
+            <li>Greedy approach: always pick the closest unvisited node.</li>
+            <li>Once a node is popped from the min-heap, its distance is finalized.</li>
+            <li>Non-negative weights only!</li>
+            <li>Use adjacency list + priority queue for best performance.</li>
+        </ol>
+    </div>
+
+    <script>
+        function showCode(btn, id) {
+            const container = btn.closest('.code-container');
+            container.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+            container.querySelectorAll('.code-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(id).classList.add('active');
+        }
+    </script>
+</body>
+</html>

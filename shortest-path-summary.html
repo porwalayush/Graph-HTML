@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shortest Path - Complete Summary</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh; color: #1a1a1a; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .back-link { color: #000000; text-decoration: none; font-size: 1.1em; display: inline-block; margin-bottom: 20px; }
+        .back-link:hover { text-decoration: underline; }
+        h1 { color: #000000; font-size: 2.2em; margin-bottom: 10px; }
+        h2 { color: #000000; font-size: 1.5em; margin: 30px 0 15px; }
+        h3 { color: #333333; margin: 20px 0 10px; }
+        p, li { line-height: 1.8; color: #333333; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 15px; }
+        .visual { background: #f5f5f5; border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin: 20px 0; text-align: center; }
+        .visual pre { color: #000000; font-size: 0.95em; display: inline-block; text-align: left; }
+        .code-container { margin: 20px 0; border-radius: 10px; overflow: hidden; border: 1px solid #ddd; }
+        .code-tabs { display: flex; background: #f0f0f0; }
+        .code-tab { padding: 10px 25px; cursor: pointer; border: none; background: transparent; color: #555555; font-size: 0.95em; border-bottom: 2px solid transparent; }
+        .code-tab.active { color: #000000; border-bottom-color: #000000; background: #f5f5f5; }
+        .code-content { display: none; background: #f5f5f5; padding: 20px; overflow-x: auto; }
+        .code-content.active { display: block; }
+        .code-content pre { color: #1a1a1a; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9em; line-height: 1.6; }
+        .keyword { color: #7b1fa2; }
+        .comment { color: #6a737d; }
+        .number { color: #005cc5; }
+        .string { color: #22863a; }
+        .note { background: #f5f5f5; border-left: 4px solid #000; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px 15px; border: 1px solid #ddd; text-align: left; }
+        th { background: #f0f0f0; color: #000000; }
+        tr:hover { background: #fafafa; }
+        .decision-box {
+            background: #fafafa;
+            border: 2px solid #000;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        .decision-box h3 { color: #000000; margin-bottom: 15px; font-size: 1.3em; }
+        .flow-item {
+            padding: 10px 15px;
+            margin: 8px 0;
+            background: #f5f5f5;
+            border-radius: 8px;
+            border-left: 3px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Index</a>
+        <h1>Shortest Path - Complete Summary</h1>
+        <p>A quick reference for choosing the right shortest path algorithm.</p>
+
+        <h2>Algorithm Comparison Table</h2>
+        <table>
+            <tr>
+                <th>Algorithm</th>
+                <th>Type</th>
+                <th>Negative Wt?</th>
+                <th>Time</th>
+                <th>Best For</th>
+            </tr>
+            <tr>
+                <td>BFS</td>
+                <td>Single source</td>
+                <td>N/A (unweighted)</td>
+                <td>O(V + E)</td>
+                <td>Unweighted graphs</td>
+            </tr>
+            <tr>
+                <td>0-1 BFS</td>
+                <td>Single source</td>
+                <td>No</td>
+                <td>O(V + E)</td>
+                <td>Weights are only 0 or 1</td>
+            </tr>
+            <tr>
+                <td>DAG relaxation</td>
+                <td>Single source</td>
+                <td>Yes</td>
+                <td>O(V + E)</td>
+                <td>DAGs (no cycles)</td>
+            </tr>
+            <tr>
+                <td>Dijkstra</td>
+                <td>Single source</td>
+                <td>No</td>
+                <td>O((V+E)logV)</td>
+                <td>Non-negative weights</td>
+            </tr>
+            <tr>
+                <td>Bellman-Ford</td>
+                <td>Single source</td>
+                <td>Yes</td>
+                <td>O(V × E)</td>
+                <td>Negative weights, negative cycle detection</td>
+            </tr>
+            <tr>
+                <td>Floyd-Warshall</td>
+                <td>All pairs</td>
+                <td>Yes</td>
+                <td>O(V³)</td>
+                <td>All pairs, small graphs (V ≤ 400)</td>
+            </tr>
+            <tr>
+                <td>Multi-source BFS</td>
+                <td>Multiple sources</td>
+                <td>N/A</td>
+                <td>O(V + E)</td>
+                <td>Distance from nearest source</td>
+            </tr>
+        </table>
+
+        <h2>Decision Flowchart: Which Algorithm to Use?</h2>
+        <div class="decision-box">
+            <h3>Ask yourself these questions:</h3>
+            <div class="flow-item">
+                <strong>Q1: Is the graph unweighted?</strong><br>
+                → YES: Use <strong>BFS</strong> (O(V+E), simplest)
+            </div>
+            <div class="flow-item">
+                <strong>Q2: Are all weights 0 or 1?</strong><br>
+                → YES: Use <strong>0-1 BFS</strong> with deque (O(V+E))
+            </div>
+            <div class="flow-item">
+                <strong>Q3: Is it a DAG?</strong><br>
+                → YES: Use <strong>Topo sort + relaxation</strong> (O(V+E), handles negative weights too!)
+            </div>
+            <div class="flow-item">
+                <strong>Q4: Are all weights non-negative?</strong><br>
+                → YES: Use <strong>Dijkstra</strong> (O((V+E)logV))
+            </div>
+            <div class="flow-item">
+                <strong>Q5: Has negative weights?</strong><br>
+                → YES: Use <strong>Bellman-Ford</strong> (O(V×E))
+            </div>
+            <div class="flow-item">
+                <strong>Q6: Need ALL pairs shortest path?</strong><br>
+                → YES: Use <strong>Floyd-Warshall</strong> (O(V³)) if V ≤ 400<br>
+                → For larger V: Run Dijkstra from each vertex
+            </div>
+        </div>
+
+        <h2>0-1 BFS (Bonus Algorithm)</h2>
+        <p>When edge weights are only 0 or 1, use a <strong>deque</strong> instead of priority queue. Push weight-0 edges to front, weight-1 edges to back.</p>
+
+        <div class="code-container">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode(this, 'java1')">Java</button>
+                <button class="code-tab" onclick="showCode(this, 'cpp1')">C++</button>
+            </div>
+            <div id="java1" class="code-content active">
+<pre>
+<span class="comment">// 0-1 BFS: edges have weight 0 or 1 only</span>
+<span class="keyword">static int</span>[] bfs01(<span class="keyword">int</span> src, List&lt;List&lt;<span class="keyword">int</span>[]&gt;&gt; adj, <span class="keyword">int</span> V) {
+    <span class="keyword">int</span>[] dist = <span class="keyword">new int</span>[V];
+    Arrays.fill(dist, Integer.MAX_VALUE);
+    dist[src] = <span class="number">0</span>;
+
+    Deque&lt;Integer&gt; deque = <span class="keyword">new</span> ArrayDeque&lt;&gt;();
+    deque.addFirst(src);
+
+    <span class="keyword">while</span> (!deque.isEmpty()) {
+        <span class="keyword">int</span> u = deque.pollFirst();
+
+        <span class="keyword">for</span> (<span class="keyword">int</span>[] edge : adj.get(u)) {
+            <span class="keyword">int</span> v = edge[<span class="number">0</span>], w = edge[<span class="number">1</span>]; <span class="comment">// w is 0 or 1</span>
+
+            <span class="keyword">if</span> (dist[u] + w &lt; dist[v]) {
+                dist[v] = dist[u] + w;
+                <span class="keyword">if</span> (w == <span class="number">0</span>)
+                    deque.addFirst(v);  <span class="comment">// 0-weight → front</span>
+                <span class="keyword">else</span>
+                    deque.addLast(v);   <span class="comment">// 1-weight → back</span>
+            }
+        }
+    }
+    <span class="keyword">return</span> dist;
+}
+</pre>
+            </div>
+            <div id="cpp1" class="code-content">
+<pre>
+<span class="comment">// 0-1 BFS: edges have weight 0 or 1 only</span>
+vector&lt;<span class="keyword">int</span>&gt; bfs01(<span class="keyword">int</span> src, vector&lt;vector&lt;pair&lt;<span class="keyword">int</span>,<span class="keyword">int</span>&gt;&gt;&gt;&amp; adj, <span class="keyword">int</span> V) {
+    vector&lt;<span class="keyword">int</span>&gt; dist(V, INT_MAX);
+    dist[src] = <span class="number">0</span>;
+
+    deque&lt;<span class="keyword">int</span>&gt; dq;
+    dq.push_front(src);
+
+    <span class="keyword">while</span> (!dq.empty()) {
+        <span class="keyword">int</span> u = dq.front(); dq.pop_front();
+
+        <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; [v, w] : adj[u]) {
+            <span class="keyword">if</span> (dist[u] + w &lt; dist[v]) {
+                dist[v] = dist[u] + w;
+                <span class="keyword">if</span> (w == <span class="number">0</span>)
+                    dq.push_front(v);  <span class="comment">// 0-weight → front</span>
+                <span class="keyword">else</span>
+                    dq.push_back(v);   <span class="comment">// 1-weight → back</span>
+            }
+        }
+    }
+    <span class="keyword">return</span> dist;
+}
+</pre>
+            </div>
+        </div>
+
+        <h2>Multi-Source BFS</h2>
+        <p>Instead of starting BFS from one node, start from ALL source nodes simultaneously. Finds shortest distance to nearest source for every cell.</p>
+
+        <div class="visual">
+<pre>
+  Example: "Rotten Oranges" / "01 Matrix"
+
+  Grid (1 = source, 0 = empty):
+  0  0  0            2  1  2
+  0  1  0    →       1  0  1     (distance to nearest 1)
+  0  0  0            2  1  2
+
+  Trick: Add ALL sources to queue at start (distance 0)
+         Then BFS outward - each layer is distance+1
+</pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode(this, 'java2')">Java</button>
+                <button class="code-tab" onclick="showCode(this, 'cpp2')">C++</button>
+            </div>
+            <div id="java2" class="code-content active">
+<pre>
+<span class="comment">// Multi-source BFS on a grid</span>
+<span class="keyword">static int</span>[][] multiSourceBFS(<span class="keyword">int</span>[][] grid) {
+    <span class="keyword">int</span> R = grid.length, C = grid[<span class="number">0</span>].length;
+    <span class="keyword">int</span>[][] dist = <span class="keyword">new int</span>[R][C];
+    <span class="keyword">for</span> (<span class="keyword">int</span>[] row : dist) Arrays.fill(row, -<span class="number">1</span>);
+
+    Queue&lt;<span class="keyword">int</span>[]&gt; queue = <span class="keyword">new</span> LinkedList&lt;&gt;();
+
+    <span class="comment">// Add ALL sources to queue (distance 0)</span>
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; R; i++)
+        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; C; j++)
+            <span class="keyword">if</span> (grid[i][j] == <span class="number">1</span>) {
+                queue.add(<span class="keyword">new int</span>[]{i, j});
+                dist[i][j] = <span class="number">0</span>;
+            }
+
+    <span class="keyword">int</span>[][] dirs = {{<span class="number">0</span>,<span class="number">1</span>},{<span class="number">0</span>,-<span class="number">1</span>},{<span class="number">1</span>,<span class="number">0</span>},{-<span class="number">1</span>,<span class="number">0</span>}};
+
+    <span class="keyword">while</span> (!queue.isEmpty()) {
+        <span class="keyword">int</span>[] cell = queue.poll();
+        <span class="keyword">for</span> (<span class="keyword">int</span>[] d : dirs) {
+            <span class="keyword">int</span> nr = cell[<span class="number">0</span>] + d[<span class="number">0</span>], nc = cell[<span class="number">1</span>] + d[<span class="number">1</span>];
+            <span class="keyword">if</span> (nr &gt;= <span class="number">0</span> &amp;&amp; nr &lt; R &amp;&amp; nc &gt;= <span class="number">0</span> &amp;&amp; nc &lt; C &amp;&amp; dist[nr][nc] == -<span class="number">1</span>) {
+                dist[nr][nc] = dist[cell[<span class="number">0</span>]][cell[<span class="number">1</span>]] + <span class="number">1</span>;
+                queue.add(<span class="keyword">new int</span>[]{nr, nc});
+            }
+        }
+    }
+    <span class="keyword">return</span> dist;
+}
+</pre>
+            </div>
+            <div id="cpp2" class="code-content">
+<pre>
+<span class="comment">// Multi-source BFS on a grid</span>
+vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt; multiSourceBFS(vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt;&amp; grid) {
+    <span class="keyword">int</span> R = grid.size(), C = grid[<span class="number">0</span>].size();
+    vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt; dist(R, vector&lt;<span class="keyword">int</span>&gt;(C, -<span class="number">1</span>));
+    queue&lt;pair&lt;<span class="keyword">int</span>,<span class="keyword">int</span>&gt;&gt; q;
+
+    <span class="comment">// Add ALL sources</span>
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; R; i++)
+        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; C; j++)
+            <span class="keyword">if</span> (grid[i][j] == <span class="number">1</span>) {
+                q.push({i, j});
+                dist[i][j] = <span class="number">0</span>;
+            }
+
+    <span class="keyword">int</span> dx[] = {<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,-<span class="number">1</span>}, dy[] = {<span class="number">1</span>,-<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>};
+
+    <span class="keyword">while</span> (!q.empty()) {
+        <span class="keyword">auto</span> [r, c] = q.front(); q.pop();
+        <span class="keyword">for</span> (<span class="keyword">int</span> d = <span class="number">0</span>; d &lt; <span class="number">4</span>; d++) {
+            <span class="keyword">int</span> nr = r + dx[d], nc = c + dy[d];
+            <span class="keyword">if</span> (nr &gt;= <span class="number">0</span> &amp;&amp; nr &lt; R &amp;&amp; nc &gt;= <span class="number">0</span> &amp;&amp; nc &lt; C &amp;&amp; dist[nr][nc] == -<span class="number">1</span>) {
+                dist[nr][nc] = dist[r][c] + <span class="number">1</span>;
+                q.push({nr, nc});
+            }
+        }
+    }
+    <span class="keyword">return</span> dist;
+}
+</pre>
+            </div>
+        </div>
+
+        <h2>Common Patterns & Tips</h2>
+        <div class="note">
+            <ul>
+                <li><strong>"Shortest path with at most K edges"</strong> → Bellman-Ford (run only K iterations)</li>
+                <li><strong>"Shortest path in grid"</strong> → BFS (unweighted) or Dijkstra (weighted)</li>
+                <li><strong>"Shortest path with constraints"</strong> → Modified Dijkstra with state = (node, constraint)</li>
+                <li><strong>"Negative cycle?"</strong> → Bellman-Ford (check after V-1 iterations)</li>
+                <li><strong>"Shortest path between all pairs, V ≤ 400"</strong> → Floyd-Warshall</li>
+                <li><strong>"Shortest path, but can change at most 1 edge to 0"</strong> → Dijkstra from src + Dijkstra from dest, try each edge</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function showCode(btn, id) {
+            const container = btn.closest('.code-container');
+            container.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+            container.querySelectorAll('.code-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(id).classList.add('active');
+        }
+    </script>
+</body>
+</html>

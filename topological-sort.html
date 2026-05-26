@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topological Sort (DFS)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh; color: #1a1a1a; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .back-link { color: #000000; text-decoration: none; font-size: 1.1em; display: inline-block; margin-bottom: 20px; }
+        .back-link:hover { text-decoration: underline; }
+        h1 { color: #000000; font-size: 2.2em; margin-bottom: 10px; }
+        h2 { color: #000000; font-size: 1.5em; margin: 30px 0 15px; }
+        p, li { line-height: 1.8; color: #333333; margin-bottom: 10px; }
+        ul, ol { padding-left: 20px; margin-bottom: 15px; }
+        .visual { background: #f5f5f5; border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin: 20px 0; text-align: center; }
+        .visual pre { color: #000000; font-size: 1em; display: inline-block; text-align: left; }
+        .code-container { margin: 20px 0; border-radius: 10px; overflow: hidden; border: 1px solid #ddd; }
+        .code-tabs { display: flex; background: #f0f0f0; }
+        .code-tab { padding: 10px 25px; cursor: pointer; border: none; background: transparent; color: #555555; font-size: 0.95em; border-bottom: 2px solid transparent; }
+        .code-tab.active { color: #000000; border-bottom-color: #000000; background: #f5f5f5; }
+        .code-content { display: none; background: #f5f5f5; padding: 20px; overflow-x: auto; }
+        .code-content.active { display: block; }
+        .code-content pre { color: #1a1a1a; font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9em; line-height: 1.6; }
+        .keyword { color: #7b1fa2; }
+        .comment { color: #6a737d; }
+        .number { color: #005cc5; }
+        .string { color: #22863a; }
+        .note { background: #f5f5f5; border-left: 4px solid #000; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Index</a>
+        <h1>Topological Sort (DFS Method)</h1>
+        <p>A <strong>linear ordering</strong> of vertices such that for every directed edge u→v, u comes before v. Only works on <strong>DAGs</strong> (Directed Acyclic Graphs).</p>
+
+        <h2>Real-Life Example</h2>
+        <div class="visual">
+<pre>
+  Course Prerequisites:
+
+  Math101 → Math201 → Math301
+       ↘               ↗
+        Physics101 → Physics201
+
+  Valid order: Math101, Physics101, Math201, Physics201, Math301
+
+  Rule: You must complete prerequisites BEFORE taking the course.
+  Topological sort gives you a valid order to take all courses!
+</pre>
+        </div>
+
+        <h2>DFS Approach</h2>
+        <p><strong>Key Insight:</strong> After DFS finishes a node (all its descendants are processed), push it to a stack. The stack gives topological order when popped!</p>
+
+        <div class="visual">
+<pre>
+  Graph: 5→0, 5→2, 4→0, 4→1, 2→3, 3→1
+
+    5 → 0      4 → 1
+    ↓           ↑
+    2 → 3 ------+
+
+  DFS finish order (when node turns BLACK): 0, 1, 3, 2, 4, 5
+  Stack (push on finish): bottom [0, 1, 3, 2, 4, 5] top
+
+  Pop stack → Topological order: 5, 4, 2, 3, 1, 0 ✓
+  (Every edge goes left-to-right in this ordering)
+</pre>
+        </div>
+
+        <div class="code-container">
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCode(this, 'java1')">Java</button>
+                <button class="code-tab" onclick="showCode(this, 'cpp1')">C++</button>
+            </div>
+            <div id="java1" class="code-content active">
+<pre>
+<span class="keyword">import</span> java.util.*;
+
+<span class="keyword">public class</span> TopoSort {
+    <span class="keyword">static void</span> dfs(<span class="keyword">int</span> node, List&lt;List&lt;Integer&gt;&gt; adj,
+                    <span class="keyword">boolean</span>[] visited, Stack&lt;Integer&gt; stack) {
+        visited[node] = <span class="keyword">true</span>;
+
+        <span class="comment">// First, visit all dependencies (neighbors)</span>
+        <span class="keyword">for</span> (<span class="keyword">int</span> neighbor : adj.get(node)) {
+            <span class="keyword">if</span> (!visited[neighbor]) {
+                dfs(neighbor, adj, visited, stack);
+            }
+        }
+
+        <span class="comment">// AFTER all neighbors are done, push this node</span>
+        stack.push(node);
+    }
+
+    <span class="keyword">static</span> List&lt;Integer&gt; topologicalSort(List&lt;List&lt;Integer&gt;&gt; adj, <span class="keyword">int</span> V) {
+        <span class="keyword">boolean</span>[] visited = <span class="keyword">new boolean</span>[V];
+        Stack&lt;Integer&gt; stack = <span class="keyword">new</span> Stack&lt;&gt;();
+
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) {
+            <span class="keyword">if</span> (!visited[i]) {
+                dfs(i, adj, visited, stack);
+            }
+        }
+
+        <span class="comment">// Pop stack to get topological order</span>
+        List&lt;Integer&gt; result = <span class="keyword">new</span> ArrayList&lt;&gt;();
+        <span class="keyword">while</span> (!stack.isEmpty()) {
+            result.add(stack.pop());
+        }
+        <span class="keyword">return</span> result;
+    }
+
+    <span class="keyword">public static void</span> main(String[] args) {
+        <span class="keyword">int</span> V = <span class="number">6</span>;
+        List&lt;List&lt;Integer&gt;&gt; adj = <span class="keyword">new</span> ArrayList&lt;&gt;();
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) adj.add(<span class="keyword">new</span> ArrayList&lt;&gt;());
+
+        adj.get(<span class="number">5</span>).add(<span class="number">0</span>); adj.get(<span class="number">5</span>).add(<span class="number">2</span>);
+        adj.get(<span class="number">4</span>).add(<span class="number">0</span>); adj.get(<span class="number">4</span>).add(<span class="number">1</span>);
+        adj.get(<span class="number">2</span>).add(<span class="number">3</span>); adj.get(<span class="number">3</span>).add(<span class="number">1</span>);
+
+        System.out.println(<span class="string">"Topological Sort: "</span> + topologicalSort(adj, V));
+    }
+}
+</pre>
+            </div>
+            <div id="cpp1" class="code-content">
+<pre>
+<span class="keyword">#include</span> &lt;bits/stdc++.h&gt;
+<span class="keyword">using namespace</span> std;
+
+<span class="keyword">void</span> dfs(<span class="keyword">int</span> node, vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt;&amp; adj,
+         vector&lt;<span class="keyword">bool</span>&gt;&amp; visited, stack&lt;<span class="keyword">int</span>&gt;&amp; st) {
+    visited[node] = <span class="keyword">true</span>;
+
+    <span class="keyword">for</span> (<span class="keyword">int</span> neighbor : adj[node]) {
+        <span class="keyword">if</span> (!visited[neighbor]) {
+            dfs(neighbor, adj, visited, st);
+        }
+    }
+    st.push(node); <span class="comment">// push AFTER all neighbors done</span>
+}
+
+vector&lt;<span class="keyword">int</span>&gt; topologicalSort(vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt;&amp; adj, <span class="keyword">int</span> V) {
+    vector&lt;<span class="keyword">bool</span>&gt; visited(V, <span class="keyword">false</span>);
+    stack&lt;<span class="keyword">int</span>&gt; st;
+
+    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; V; i++) {
+        <span class="keyword">if</span> (!visited[i]) dfs(i, adj, visited, st);
+    }
+
+    vector&lt;<span class="keyword">int</span>&gt; result;
+    <span class="keyword">while</span> (!st.empty()) {
+        result.push_back(st.top());
+        st.pop();
+    }
+    <span class="keyword">return</span> result;
+}
+
+<span class="keyword">int</span> main() {
+    <span class="keyword">int</span> V = <span class="number">6</span>;
+    vector&lt;vector&lt;<span class="keyword">int</span>&gt;&gt; adj(V);
+    adj[<span class="number">5</span>].push_back(<span class="number">0</span>); adj[<span class="number">5</span>].push_back(<span class="number">2</span>);
+    adj[<span class="number">4</span>].push_back(<span class="number">0</span>); adj[<span class="number">4</span>].push_back(<span class="number">1</span>);
+    adj[<span class="number">2</span>].push_back(<span class="number">3</span>); adj[<span class="number">3</span>].push_back(<span class="number">1</span>);
+
+    vector&lt;<span class="keyword">int</span>&gt; result = topologicalSort(adj, V);
+    cout &lt;&lt; <span class="string">"Topological Sort: "</span>;
+    <span class="keyword">for</span> (<span class="keyword">int</span> x : result) cout &lt;&lt; x &lt;&lt; <span class="string">" "</span>;
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+</pre>
+            </div>
+        </div>
+
+        <h2>Key Points</h2>
+        <div class="note">
+            <ul>
+                <li><strong>Only works on DAGs</strong> — if graph has a cycle, topological sort is impossible</li>
+                <li><strong>Not unique</strong> — multiple valid orderings can exist</li>
+                <li><strong>Why push AFTER?</strong> A node should come before its dependencies. After DFS finishes all children, that node has no more "things to do first" → safe to add it.</li>
+                <li><strong>Time:</strong> O(V + E)</li>
+                <li><strong>Applications:</strong> Build systems, task scheduling, course prerequisites</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function showCode(btn, id) {
+            const container = btn.closest('.code-container');
+            container.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+            container.querySelectorAll('.code-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(id).classList.add('active');
+        }
+    </script>
+</body>
+</html>
