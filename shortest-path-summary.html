@@ -320,95 +320,9 @@
             </div>
         </div>
 
-        <h2>0-1 BFS (Bonus Algorithm)</h2>
-        <p>When edge weights are only 0 or 1, use a <strong>deque</strong> instead of priority queue. Push weight-0 edges to front, weight-1 edges to back.</p>
-
-        <div class="code-container">
-            <div class="code-tabs">
-                <button class="code-tab active" onclick="showCode(this, 'java1')">Java</button>
-                <button class="code-tab" onclick="showCode(this, 'cpp1')">C++</button>
-                <button class="code-tab" onclick="showCode(this, 'python1')">Python</button>
-            </div>
-            <div id="java1" class="code-content active">
-<pre>
-<span class="comment">// 0-1 BFS: edges have weight 0 or 1 only</span>
-<span class="keyword">static int</span>[] bfs01(<span class="keyword">int</span> src, List&lt;List&lt;<span class="keyword">int</span>[]&gt;&gt; adj, <span class="keyword">int</span> V) {
-    <span class="keyword">int</span>[] dist = <span class="keyword">new int</span>[V];
-    Arrays.fill(dist, Integer.MAX_VALUE);
-    dist[src] = <span class="number">0</span>;
-
-    Deque&lt;Integer&gt; deque = <span class="keyword">new</span> ArrayDeque&lt;&gt;();
-    deque.addFirst(src);
-
-    <span class="keyword">while</span> (!deque.isEmpty()) {
-        <span class="keyword">int</span> u = deque.pollFirst();
-
-        <span class="keyword">for</span> (<span class="keyword">int</span>[] edge : adj.get(u)) {
-            <span class="keyword">int</span> v = edge[<span class="number">0</span>], w = edge[<span class="number">1</span>]; <span class="comment">// w is 0 or 1</span>
-
-            <span class="keyword">if</span> (dist[u] + w &lt; dist[v]) {
-                dist[v] = dist[u] + w;
-                <span class="keyword">if</span> (w == <span class="number">0</span>)
-                    deque.addFirst(v);  <span class="comment">// 0-weight → front</span>
-                <span class="keyword">else</span>
-                    deque.addLast(v);   <span class="comment">// 1-weight → back</span>
-            }
-        }
-    }
-    <span class="keyword">return</span> dist;
-}
-</pre>
-            </div>
-            <div id="cpp1" class="code-content">
-<pre>
-<span class="comment">// 0-1 BFS: edges have weight 0 or 1 only</span>
-vector&lt;<span class="keyword">int</span>&gt; bfs01(<span class="keyword">int</span> src, vector&lt;vector&lt;pair&lt;<span class="keyword">int</span>,<span class="keyword">int</span>&gt;&gt;&gt;&amp; adj, <span class="keyword">int</span> V) {
-    vector&lt;<span class="keyword">int</span>&gt; dist(V, INT_MAX);
-    dist[src] = <span class="number">0</span>;
-
-    deque&lt;<span class="keyword">int</span>&gt; dq;
-    dq.push_front(src);
-
-    <span class="keyword">while</span> (!dq.empty()) {
-        <span class="keyword">int</span> u = dq.front(); dq.pop_front();
-
-        <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; [v, w] : adj[u]) {
-            <span class="keyword">if</span> (dist[u] + w &lt; dist[v]) {
-                dist[v] = dist[u] + w;
-                <span class="keyword">if</span> (w == <span class="number">0</span>)
-                    dq.push_front(v);  <span class="comment">// 0-weight → front</span>
-                <span class="keyword">else</span>
-                    dq.push_back(v);   <span class="comment">// 1-weight → back</span>
-            }
-        }
-    }
-    <span class="keyword">return</span> dist;
-}
-</pre>
-            </div>
-            <div id="python1" class="code-content">
-<pre>
-<span class="keyword">from</span> collections <span class="keyword">import</span> deque
-
-<span class="keyword">def</span> bfs_01(src, adj, V):
-    <span class="comment"># adj[u] = [(v, weight)] where weight is 0 or 1</span>
-    dist = [<span class="keyword">float</span>(<span class="string">'inf'</span>)] * V
-    dist[src] = <span class="number">0</span>
-    dq = deque([src])
-
-    <span class="keyword">while</span> dq:
-        u = dq.popleft()
-        <span class="keyword">for</span> v, w <span class="keyword">in</span> adj[u]:
-            <span class="keyword">if</span> dist[u] + w &lt; dist[v]:
-                dist[v] = dist[u] + w
-                <span class="keyword">if</span> w == <span class="number">0</span>:
-                    dq.appendleft(v)  <span class="comment"># 0-weight → front</span>
-                <span class="keyword">else</span>:
-                    dq.append(v)      <span class="comment"># 1-weight → back</span>
-    <span class="keyword">return</span> dist
-</pre>
-            </div>
-        </div>
+        <h2>0-1 BFS</h2>
+        <p>When edge weights are only 0 or 1, use a <strong>deque</strong> instead of priority queue. Push weight-0 edges to front, weight-1 edges to back. Achieves O(V+E) instead of O((V+E) log V).</p>
+        <p>→ <a href="zero-one-bfs.html" style="color:#6366f1; font-weight:600; text-decoration:none;">See full 0-1 BFS page with code & visualizations</a></p>
 
         <h2>Multi-Source BFS</h2>
         <p>Instead of starting BFS from one node, start from ALL source nodes simultaneously. Finds shortest distance to nearest source for every cell.</p>
